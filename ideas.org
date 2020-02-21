@@ -1,0 +1,22 @@
+* Ideas
+
+*Theme:* Frequency - "Free Quincy" 
+
+- Snake like game, sinus snake
+- Timing buttons, clock work
+- Assassin clock work
+- Jump in sync with pendulums
+- "Cook" with sine waves
+- Circles
+- Simon says
+- Arm rotates and it holds a certain item
+- Movement by grabbing stuff
+- Spider-man like movement and save Quincy
+- Control robot made by a mad scientist
+
+Local multiplayer
+
+
+
+
+
