@@ -20,16 +20,16 @@ function loadlvl(lvl)
   world:addCollisionClass("Solid")
   world:addCollisionClass("Foot", {ignores = {"Player"}})
   world:addCollisionClass("Hand", {ignores = {"Player"}, enter = {"Solid"} })
-
+  
   local map = cartographer.load("lvls/" .. lvl .. ".lua")
   local solidlayer = map:getLayer("Solid")
   for i,gid,gx,gy,x,y in solidlayer:getTiles() do
     mksolid(world, x, y, tileW, tileH)
   end
-
+  
   local pl = map:getLayer("Player").objects[1]
   local player = mkplayer(world, pl.x, pl.y)
-
+  
   local left, top, right, bottom = solidlayer:getPixelBounds()
   local cam = gamera.new(left,top,right,bottom)
   cam:setScale(2)
@@ -51,7 +51,7 @@ function mkplayer(world, x, y)
   leg:setObject(leg)
   leg:setFriction(10)
   --leg:addShape("Foot", "RectangleShape", x, y+h, w + w / 2, 8)
-
+  
   --world:addJoint('WeldJoint', foot, leg, x, y+h)
   --world:addJoint('WeldJoint', foot, leg, x+w, y+h)
   -- j:setDampingRatio(0.01)
@@ -59,16 +59,16 @@ function mkplayer(world, x, y)
   bind:setMass(0)
   -- bind:setCollisionClass("Hand")
   bind:setObject(leg) -- what is this??
-
+  
   arm = world:newRectangleCollider(x, y - h, w, h)
   arm:setCollisionClass("Player")
   arm:setObject(leg)
-
+  
   hand = world:newCircleCollider(x + w/2, y - h, w / 2)
   hand:setMass(0)
   hand:setCollisionClass("Hand")
   hand:setObject(leg) -- maybe no collisions
-
+  
   local j = world:addJoint('PrismaticJoint', leg, bind, x + w/2,y, 0, -1)
   j:setLimits(-40, 0) 
   --j:setDampingRatio(1)
@@ -102,6 +102,8 @@ end
 
 function love.load()
   love.graphics.setDefaultFilter( 'nearest', 'nearest' )
+  foot = love.graphics.newImage("art/foot.png")
+  handimg = love.graphics.newImage("art/hand.png")
   state = loadlvl("test")
 end
 
@@ -109,16 +111,30 @@ function love.draw()
   local cam, world, map = state.cam, state.world, state.map
   cam:draw(function(l,t,w,h) 
     world:draw()
-    map:draw()
+    -- map:draw()
+    -- playerdraw(state.player)
   end)
+
+end
+
+
+function playerdraw(player)
+  local arm, leg = player.arm, player.leg
+  local x,y = leg:getPosition()
+  local r = leg:getAngle()
+  love.graphics.draw(foot, x,y, r, 0.4, 0.4, 200, 540)
+
+  x,y = arm:getPosition()
+  r = arm:getAngle()
+  love.graphics.draw(handimg, x,y, r, 0.4, 0.4, 200, 260)
 end
 
 function playermove(world, player)
   local leg, hand = player.leg, player.hand
-  local ang = 5000
+  local ang = 7000
   local jmp = 100
   local up = 80
-
+  
   local getDir = function()
     return vector.fromPolar(leg:getAngle() - math.pi / 2)
   end
@@ -144,7 +160,7 @@ function playermove(world, player)
     rotate(1)
   end
 
-  if love.keyboard.isDown("up") then
+  if love.keyboard.isDown("space") then
     v = getDir()
     -- player.col:applyLinearImpulse(v.x, v.y)
     if not player.holdjoint and hand:enter("Solid") then
@@ -174,6 +190,7 @@ function playermove(world, player)
 end
 
 function love.update(dt)
+  require("lib/lurker").update()
   local world, player, cam = state.world, state.player, state.cam
   world:update(dt)
   timer.update(dt)
@@ -197,11 +214,6 @@ function love.keypressed(key)
   if key == "r" then
     state = loadlvl(state.lvl)
   end
-
-
-  if key == "down" then
-    state.player.legjoint:setLimits(-40, 0) 
-  end
 end 
 
 function love.keyreleased(key)
@@ -211,6 +223,5 @@ function love.keyreleased(key)
     local v = d * 1000 * 4
     player.leg:applyLinearImpulse(-v.x, -v.y)
     player.arm:applyLinearImpulse(v.x, v.y)
-    --timer.after(0.5, function() player.legjoint:setLimits(0,0) end)
   end
 end
