@@ -77,7 +77,9 @@ function mkplayer(world, x, y)
   j:setLimits(-40, 0) 
   --j:setDampingRatio(1)
   --j:setFrequency(50)
-  world:addJoint('WeldJoint', arm, bind, x + w/2,y)
+  j=world:addJoint('WeldJoint', arm, bind, x + w/2,y)
+  j:setDampingRatio(100000)
+  j:setFrequency(10000)
   -- world:addJoint('WeldJoint', hand, arm, x + w/2, y - h)
   return {
     width = w,
@@ -108,7 +110,7 @@ end
 
 function love.load()  
   love.graphics.setDefaultFilter( 'nearest', 'nearest' )
-  state = loadlvl("test")
+  state = loadlvl("firstlvl")
 end
 
 function love.draw()
@@ -146,7 +148,7 @@ end
 
 function playermove(world, player)
   local leg,arm = player.leg, player.arm
-  local ang = 7000
+  local ang = 6000
   local jmp = 100
   local up = 80
   
@@ -250,7 +252,7 @@ function love.keyreleased(key)
   if key == "down" then
     local player = state.player
     local d = vector.fromPolar(player.leg:getAngle() - math.pi / 2)
-    local v = d * 1000 * 4
+    local v = d * 1000 * 3
     player.leg:applyLinearImpulse(-v.x, -v.y)
     player.arm:applyLinearImpulse(v.x, v.y)
   end
