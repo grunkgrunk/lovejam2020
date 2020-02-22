@@ -1,22 +1,26 @@
 local lume = require("lib/lume")
 local wf = require("lib/windfield")
 local vector = require("lib/vector")
+local cartographer = require("lib/cartographer")
+local inspect = require("lib/inspect")
+local gamera = require("lib/gamera")
 
+local p = function(x) print(inspect(x)) end
 
-function mkplayer()
-  x = 400 - 50/2
-  y = 0
-  box = world:newRectangleCollider(x, y, 50, 100)
+function mkplayer(x, y)
+  local w,h = 32, 80
+  -- position players' feet at where the arrow points
+  y = y - h
+  box = world:newRectangleCollider(x, y, w, h)
   box:setCollisionClass("Player")
   box:setObject(box)
 
-  circ = world:newCircleCollider(x + 25, y, 25)
-  circ:setMass(0)
+  circ = world:newCircleCollider(x + w/2, y, w / 2)
+  -- circ:setMass(0)
   circ:setCollisionClass("Hand")
   circ:setObject(box) -- what is this??
 
-
-  world:addJoint('WeldJoint', box, circ, x + 25,y)
+  world:addJoint('WeldJoint', box, circ, x + w/2,y)
   return {
     col = box,
     hand = circ,
@@ -41,27 +45,36 @@ end
 
 
 function love.load()
+  love.graphics.setDefaultFilter( 'nearest', 'nearest' )
+
   world = wf.newWorld(0,0, true)
   world:setGravity(0, 512)
-
+  
   classes = {"Player", "Ground", "Hand"}
   lume.each(classes, function(w) world:addCollisionClass(w) end)
+  
+  map = cartographer.load("lvls/test.lua")
 
-  mkground(0, 550, 800, 50)
-  mkground(0,0,50,600)
-  mkground(750,0,50,600)
+  layer = map:getLayer("Solid")
+  for i,gid,gx,gy,x,y in layer:getTiles() do
+    mkground(x, y, 16, 16)
+  end
 
-  mkcircle(300, 300, 30)
-
-  player = mkplayer()
+  local pl = map:getLayer("Player").objects[1]
+  player = mkplayer(pl.x, pl.y)
+  cam = gamera.new(0,0,2000, 2000)
 end
 
 function love.draw()
-  world:draw()
+  cam:draw(function(l,t,w,h) 
+    world:draw()
+    map:draw()
+  end)
 end
 
 function love.update(dt)
   world:update(dt)
+  cam:setPosition(player.hand:getPosition())
 
   if player.col:enter("Ground") then
     player.grounded = true
