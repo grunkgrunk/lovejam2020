@@ -109,7 +109,7 @@
 </data>
  </layer>
  <objectgroup color="#00ff00" id="5" name="Player">
-  <object id="4" x="329" y="1105">
+  <object id="4" x="275" y="1450">
    <point/>
   </object>
  </objectgroup>

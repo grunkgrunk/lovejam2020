@@ -4,119 +4,213 @@ local vector = require("lib/vector")
 local cartographer = require("lib/cartographer")
 local inspect = require("lib/inspect")
 local gamera = require("lib/gamera")
-
+local timer = require("lib/timer")
 local p = function(x) print(inspect(x)) end
 
-function mkplayer(x, y)
+state = {}
+
+function loadlvl(lvl)
+  local tileW, tileH = 16,16
+  local world = wf.newWorld(0,0, true)
+  world:setGravity(0, 512)
+  
+  
+  world:addCollisionClass("Player", {ignores = {"Player"}})
+  world:addCollisionClass("Leg", {ignores = {"Player"}})
+  world:addCollisionClass("Solid")
+  world:addCollisionClass("Foot", {ignores = {"Player"}})
+  world:addCollisionClass("Hand", {ignores = {"Player"}, enter = {"Solid"} })
+
+  local map = cartographer.load("lvls/" .. lvl .. ".lua")
+  local solidlayer = map:getLayer("Solid")
+  for i,gid,gx,gy,x,y in solidlayer:getTiles() do
+    mksolid(world, x, y, tileW, tileH)
+  end
+
+  local pl = map:getLayer("Player").objects[1]
+  local player = mkplayer(world, pl.x, pl.y)
+
+  local left, top, right, bottom = solidlayer:getPixelBounds()
+  local cam = gamera.new(left,top,right,bottom)
+  cam:setScale(2)
+  return {
+    cam = cam,
+    world = world,
+    player = player,
+    map = map,
+    lvl = lvl
+  }
+end
+
+function mkplayer(world, x, y)
   local w,h = 32, 80
   -- position players' feet at where the arrow points
   y = y - h
-  box = world:newRectangleCollider(x, y, w, h)
-  box:setCollisionClass("Player")
-  box:setObject(box)
+  leg = world:newRectangleCollider(x, y, w, h)
+  leg:setCollisionClass("Player")
+  leg:setObject(leg)
+  leg:setFriction(10)
+  --leg:addShape("Foot", "RectangleShape", x, y+h, w + w / 2, 8)
 
-  circ = world:newCircleCollider(x + w/2, y, w / 2)
-  -- circ:setMass(0)
-  circ:setCollisionClass("Hand")
-  circ:setObject(box) -- what is this??
+  --world:addJoint('WeldJoint', foot, leg, x, y+h)
+  --world:addJoint('WeldJoint', foot, leg, x+w, y+h)
+  -- j:setDampingRatio(0.01)
+  bind = world:newCircleCollider(x + w/2, y, w / 2)
+  bind:setMass(0)
+  -- bind:setCollisionClass("Hand")
+  bind:setObject(leg) -- what is this??
 
-  world:addJoint('WeldJoint', box, circ, x + w/2,y)
+  arm = world:newRectangleCollider(x, y - h, w, h)
+  arm:setCollisionClass("Player")
+  arm:setObject(leg)
+
+  hand = world:newCircleCollider(x + w/2, y - h, w / 2)
+  hand:setMass(0)
+  hand:setCollisionClass("Hand")
+  hand:setObject(leg) -- maybe no collisions
+
+  local j = world:addJoint('PrismaticJoint', leg, bind, x + w/2,y, 0, -1)
+  j:setLimits(-40, 0) 
+  --j:setDampingRatio(1)
+  --j:setFrequency(50)
+  world:addJoint('WeldJoint', arm, bind, x + w/2,y)
+  world:addJoint('WeldJoint', hand, arm, x + w/2, y - h)
   return {
-    col = box,
-    hand = circ,
+    arm = arm,
+    hand = hand,
+    leg = leg,
+    bind = bind,
+    legjoint = j,
     grounded = false,
     holding = false
   }
 end
 
-function mkground(x, y, w, h)
+function mksolid(world, x, y, w, h)
   local ground = world:newRectangleCollider(x, y, w, h) 
   ground:setType('static') -- Types can be 'static', 'dynamic' or 'kinematic'. Defaults to 'dynamic'
-  ground:setCollisionClass("Ground")
+  ground:setCollisionClass("Solid")
   return ground
 end
 
-function mkcircle(x, y, r)
+function mkcircle(world, x, y, r)
   local c = world:newCircleCollider(x, y, r)
   c:setType("static")
-  c:setCollisionClass("Ground")
+  c:setCollisionClass("Solid")
   return c 
 end
 
-
 function love.load()
   love.graphics.setDefaultFilter( 'nearest', 'nearest' )
-
-  world = wf.newWorld(0,0, true)
-  world:setGravity(0, 512)
-  
-  classes = {"Player", "Ground", "Hand"}
-  lume.each(classes, function(w) world:addCollisionClass(w) end)
-  
-  map = cartographer.load("lvls/test.lua")
-
-  layer = map:getLayer("Solid")
-  for i,gid,gx,gy,x,y in layer:getTiles() do
-    mkground(x, y, 16, 16)
-  end
-
-  local pl = map:getLayer("Player").objects[1]
-  player = mkplayer(pl.x, pl.y)
-  cam = gamera.new(0,0,2000, 2000)
+  state = loadlvl("test")
 end
 
 function love.draw()
+  local cam, world, map = state.cam, state.world, state.map
   cam:draw(function(l,t,w,h) 
     world:draw()
     map:draw()
   end)
 end
 
-function love.update(dt)
-  world:update(dt)
-  cam:setPosition(player.hand:getPosition())
+function playermove(world, player)
+  local leg, hand = player.leg, player.hand
+  local ang = 5000
+  local jmp = 100
+  local up = 80
 
-  if player.col:enter("Ground") then
-    player.grounded = true
+  local getDir = function()
+    return vector.fromPolar(leg:getAngle() - math.pi / 2)
   end
 
-  if player.col:exit("Ground") then
-    player.grounded = false
+  local rotate = function(dir)
+    -- player.leg:applyLinearImpulse(0, -up)
+    local imp = vector.fromPolar(leg:getAngle()) * dir * ang
+    local x,y = player.bind:getPosition()
+    -- leg:applyLinearImpulse(imp.x, imp.y, x, y)
+    player.bind:applyAngularImpulse(ang * dir)
   end
 
-  if love.keyboard.isDown("down") and player.grounded then
-    angle = player.col:getAngle() - math.pi / 2
-    v = vector.fromPolar(angle, 2000) 
-    player.col:applyLinearImpulse(v.x, v.y)
-  end
+
+  --if love.keyboard.isDown("down") and not player.grounded then
+  --  local v = -getDir() * jmp * 10
+  --  player.leg:applyLinearImpulse(v.x, v.y)
+  --end
 
   if love.keyboard.isDown("left") then
-    player.col:applyLinearImpulse(0, -80)
-    player.col:applyAngularImpulse(-1000)
+    rotate(-1)
   end
   if love.keyboard.isDown("right") then
-    player.col:applyLinearImpulse(0, -80)
-    player.col:applyAngularImpulse(1000)
+    rotate(1)
   end
 
   if love.keyboard.isDown("up") then
-    angle = player.col:getAngle() - math.pi / 2
-    v = vector.fromPolar(angle, 200) 
+    v = getDir()
     -- player.col:applyLinearImpulse(v.x, v.y)
-    if not player.holdjoint and player.hand:enter("Ground") then
-      local x1,y1,x2,y2 = player.hand:getEnterCollisionData("Ground").contact:getPositions()
-      local v = (vector(x1,y1) + vector(x2, y2)) / 2
-      local j = world:addJoint("RevoluteJoint", player.hand, player.hand:getEnterCollisionData("Ground").collider, x1,y1)
+    if not player.holdjoint and hand:enter("Solid") then
+      local x1,y1,x2,y2 = hand:getEnterCollisionData("Solid").contact:getPositions()
+      local j = world:addJoint("RevoluteJoint", hand, hand:getEnterCollisionData("Solid").collider, x1,y1)
       player.holdjoint = j
+      print("Yes")
     end
   elseif player.holdjoint then
     player.holdjoint:destroy()
     player.holdjoint = nil
   end
+
+  if love.keyboard.isDown("down") then
+    local player = state.player
+    local d = vector.fromPolar(player.leg:getAngle() - math.pi / 2)
+    local v = d * 100
+    player.leg:applyLinearImpulse(v.x, v.y)
+    player.arm:applyLinearImpulse(-v.x, -v.y)
+  else
+    local player = state.player
+    local d = vector.fromPolar(player.leg:getAngle() - math.pi / 2)
+    local v = d * 100
+    player.leg:applyLinearImpulse(-v.x, -v.y)
+    player.arm:applyLinearImpulse(v.x, v.y)
+  end
+end
+
+function love.update(dt)
+  local world, player, cam = state.world, state.player, state.cam
+  world:update(dt)
+  timer.update(dt)
+  cam:setPosition(player.bind:getPosition())
+
+  if player.leg:enter("Ground") then
+    player.grounded = true
+  end
+
+  if player.leg:exit("Ground") then
+    player.grounded = false
+  end
+
+  playermove(world, player)
 end
 
 function love.keypressed(key)
   if key == "escape" then
     love.event.quit()
+  end
+  if key == "r" then
+    state = loadlvl(state.lvl)
+  end
+
+
+  if key == "down" then
+    state.player.legjoint:setLimits(-40, 0) 
+  end
+end 
+
+function love.keyreleased(key)
+  if key == "down" then
+    local player = state.player
+    local d = vector.fromPolar(player.leg:getAngle() - math.pi / 2)
+    local v = d * 1000 * 4
+    player.leg:applyLinearImpulse(-v.x, -v.y)
+    player.arm:applyLinearImpulse(v.x, v.y)
+    --timer.after(0.5, function() player.legjoint:setLimits(0,0) end)
   end
 end
