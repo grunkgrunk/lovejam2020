@@ -7,6 +7,8 @@ local gamera = require("lib/gamera")
 local timer = require("lib/timer")
 local p = function(x) print(inspect(x)) end
 
+debug = true
+assets = require('lib/cargo').init('assets')
 state = {}
 
 function loadlvl(lvl)
@@ -21,6 +23,8 @@ function loadlvl(lvl)
   world:addCollisionClass("Foot", {ignores = {"Player"}})
   world:addCollisionClass("Hand", {ignores = {"Player"}, enter = {"Solid"} })
   
+
+  world:setQueryDebugDrawing(true)
   local map = cartographer.load("lvls/" .. lvl .. ".lua")
   local solidlayer = map:getLayer("Solid")
   for i,gid,gx,gy,x,y in solidlayer:getTiles() do
@@ -43,7 +47,7 @@ function loadlvl(lvl)
 end
 
 function mkplayer(world, x, y)
-  local w,h = 32, 80
+  local w,h = 20, 80
   -- position players' feet at where the arrow points
   y = y - h
   leg = world:newRectangleCollider(x, y, w, h)
@@ -64,20 +68,22 @@ function mkplayer(world, x, y)
   arm:setCollisionClass("Player")
   arm:setObject(leg)
   
-  hand = world:newCircleCollider(x + w/2, y - h, w / 2)
-  hand:setMass(0)
-  hand:setCollisionClass("Hand")
-  hand:setObject(leg) -- maybe no collisions
+  -- hand = world:newCircleCollider(x + w/2, y - h, w / 4)
+  -- hand:setMass(0)
+  -- hand:setCollisionClass("Hand")
+  -- hand:setObject(leg) -- maybe no collisions
   
   local j = world:addJoint('PrismaticJoint', leg, bind, x + w/2,y, 0, -1)
   j:setLimits(-40, 0) 
   --j:setDampingRatio(1)
   --j:setFrequency(50)
   world:addJoint('WeldJoint', arm, bind, x + w/2,y)
-  world:addJoint('WeldJoint', hand, arm, x + w/2, y - h)
+  -- world:addJoint('WeldJoint', hand, arm, x + w/2, y - h)
   return {
+    width = w,
+    height = h,
     arm = arm,
-    hand = hand,
+    -- hand = hand,
     leg = leg,
     bind = bind,
     legjoint = j,
@@ -100,19 +106,19 @@ function mkcircle(world, x, y, r)
   return c 
 end
 
-function love.load()
+function love.load()  
   love.graphics.setDefaultFilter( 'nearest', 'nearest' )
-  foot = love.graphics.newImage("art/foot.png")
-  handimg = love.graphics.newImage("art/hand.png")
   state = loadlvl("test")
 end
 
 function love.draw()
   local cam, world, map = state.cam, state.world, state.map
   cam:draw(function(l,t,w,h) 
-    world:draw()
-    -- map:draw()
-    -- playerdraw(state.player)
+    if debug then 
+      world:draw()
+    end
+    map:draw()
+    playerdraw(state.player)
   end)
 
 end
@@ -122,15 +128,24 @@ function playerdraw(player)
   local arm, leg = player.arm, player.leg
   local x,y = leg:getPosition()
   local r = leg:getAngle()
-  love.graphics.draw(foot, x,y, r, 0.4, 0.4, 200, 540)
+  love.graphics.draw(assets.art.leg, x,y, r, 0.2, 0.2, 100, 801)
 
   x,y = arm:getPosition()
   r = arm:getAngle()
-  love.graphics.draw(handimg, x,y, r, 0.4, 0.4, 200, 260)
+
+  local s = assets.art.arm
+  if player.holding then
+    s = assets.art.almosthold
+  end
+  if player.holdjoint then
+    s = assets.art.hold
+  end
+
+  love.graphics.draw(s, x,y, r, 0.2, 0.2, 100, 400)
 end
 
 function playermove(world, player)
-  local leg, hand = player.leg, player.hand
+  local leg,arm = player.leg, player.arm
   local ang = 7000
   local jmp = 100
   local up = 80
@@ -160,14 +175,25 @@ function playermove(world, player)
     rotate(1)
   end
 
+  player.holding = false
   if love.keyboard.isDown("space") then
+    player.holding = true
     v = getDir()
+    local x,y = arm:getPosition()
     -- player.col:applyLinearImpulse(v.x, v.y)
-    if not player.holdjoint and hand:enter("Solid") then
-      local x1,y1,x2,y2 = hand:getEnterCollisionData("Solid").contact:getPositions()
-      local j = world:addJoint("RevoluteJoint", hand, hand:getEnterCollisionData("Solid").collider, x1,y1)
+    local w = player.width/2
+    local h = player.height/2
+
+    local r = arm:getAngle()
+    local v = vector.fromPolar(r - math.pi / 2, h)
+
+    local hx,hy = x + v.x, y + v.y
+    local col = world:queryCircleArea(hx,hy, w + 6, {'Solid'})
+    
+    if not player.holdjoint and #col > 0 then
+      local c = col[1]
+      local j = world:addJoint("RevoluteJoint", arm, c, hx,hy )
       player.holdjoint = j
-      print("Yes")
     end
   elseif player.holdjoint then
     player.holdjoint:destroy()
@@ -213,6 +239,10 @@ function love.keypressed(key)
   end
   if key == "r" then
     state = loadlvl(state.lvl)
+  end
+
+  if key == "d" then 
+    debug = not debug
   end
 end 
 
