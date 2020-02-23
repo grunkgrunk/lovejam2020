@@ -36,6 +36,9 @@ function loadlvl(lvl)
   
   local left, top, right, bottom = solidlayer:getPixelBounds()
   local cam = gamera.new(left,top,right,bottom)
+
+  
+
   cam:setScale(2)
   return {
     cam = cam,
@@ -55,6 +58,21 @@ function mkplayer(world, x, y)
   leg:setObject(leg)
   leg:setFriction(10)
   leg:setMass(3.5)
+  leg:setPreSolve(function(collider_1, collider_2, contact)
+    --if(collider_2.getCollisionClass() == 'Ground' or collider_1.getCollisionClass() == 'Ground') then
+      local vx,vy = collider_1:getLinearVelocity()
+      local v2x,v2y = collider_1:getLinearVelocity()
+      local v = math.abs(vx)+math.abs(vy)+math.abs(v2x)+math.abs(v2y)
+      
+  
+      if(v>700) then
+        
+      elseif(v>400):
+        assets.sfx.smack:play()
+      end
+    --end
+  end)
+
   -- world:addJoint('WeldJoint', arm, bind, x + w/2,y)
   -- world:addJoint('WeldJoint', hand, arm, x + w/2, y - h)
   return {
@@ -82,7 +100,7 @@ end
 
 function love.load()  
   love.graphics.setDefaultFilter( 'nearest', 'nearest' )
-  state = loadlvl("firstlvl")
+  state = loadlvl("test")
 end
 
 function love.draw()
@@ -183,6 +201,7 @@ function love.update(dt)
   cam:setPosition(player.leg:getPosition())
 
   if player.leg:enter("Ground") then
+    
     player.grounded = true
   end
 
