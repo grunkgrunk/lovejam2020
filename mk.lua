@@ -1,8 +1,8 @@
 
 local mk = {}
 
-function mk.boulder(world, x,y, r)
-    local c = mkcircle(world, x, y, r)
+function mk.boulder(world, x,y)
+    local c = mk.circle(world, x, y, 40)
     c:setCollisionClass("Solid")
     c:setAngularDamping(1)
     c:setMass(4)
@@ -49,5 +49,12 @@ function mk.player(world, x, y)
       holding = false
     }
   end
+
+
+function mk.chick(world, x, y)
+    x,y = x, y-200
+    local r = mk.rect(world, x, y, 30, 200)
+    return r
+end
 
   return mk

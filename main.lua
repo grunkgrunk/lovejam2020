@@ -5,48 +5,25 @@ local cartographer = require("lib/cartographer")
 local inspect = require("lib/inspect")
 local gamera = require("lib/gamera")
 local timer = require("lib/timer")
+local push = require("lib/push")
 local p = function(x) print(inspect(x)) end
 local mk = require("mk")
 local drw = require("drw")
 local loadlvl = require("loadlvl")
+
 
 debug = true
 assets = require('lib/cargo').init('assets')
 state = {}
 raydebug = {}
 
+local gameWidth, gameHeight = 1080, 720 --fixed game resolution
+local windowWidth, windowHeight = love.window.getDesktopDimensions()
 
-function love.load()
-  local m = assets.sfx.firstmusic
-  m:play()
-  m:setLooping(true)
-  world:setQueryDebugDrawing(true)
-  love.graphics.setDefaultFilter( 'nearest', 'nearest' )
-  font = assets.font.Shaka_Pow
-  love.graphics.setFont(font(15))
-  state = loadlvl("finallvl")
-end
+windowWidth, windowHeight = windowWidth*.7, windowHeight*.7 --make the window a bit smaller than the screen itself
 
-function love.draw()
-  local cam, world, map = state.cam, state.world, state.map
-  cam:draw(function(l,t,w,h) 
-    love.graphics.clear(50/255,60/255,57/255)
-    
-    if debug then 
-      world:draw()
-    end
-    map:draw()
-    drw.player(state.player.leg)
-    drw.boulder(state.boulder)
+push:setupScreen(gameWidth, gameHeight, windowWidth, windowHeight, {fullscreen = false})
 
-    if debug then
-      for i,v in ipairs(raydebug) do
-        love.graphics.line(v.from.x, v.from.y, v.to.x, v.to.y)
-      end
-    end
-  end)
-
-end
 
 function playermove(world, player)
   local leg = player.leg
@@ -105,8 +82,45 @@ function playermove(world, player)
   end
 end
 
+function love.load()
+  local m = assets.sfx.firstmusic
+  m:play()
+  m:setLooping(true)
+  love.graphics.setDefaultFilter( 'nearest', 'nearest' )
+  font = assets.font.Shaka_Pow
+  love.graphics.setFont(font(15))
+  state = loadlvl("finallvl")
+end
+
+function love.draw()
+  push:start()
+  local cam, world, map = state.cam, state.world, state.map
+  cam:setScale(2.5)
+  cam:draw(function(l,t,w,h) 
+    love.graphics.clear(50/255,60/255,57/255)
+    
+    if debug then 
+      world:draw()
+    end
+    map:draw()
+    drw.player(state.player.leg)
+    drw.boulder(state.boulder)
+
+    lume.each(state.chicks, drw.chick) 
+
+    if debug then
+      for i,v in ipairs(raydebug) do
+        love.graphics.line(v.from.x, v.from.y, v.to.x, v.to.y)
+      end
+    end
+  end)
+  push:finish()
+
+end
+
+
 function love.update(dt)
-  -- require("lib/lurker").update()
+  --require("lib/lurker").update()
   local world, player, cam = state.world, state.player, state.cam
   world:update(dt)
   timer.update(dt)
@@ -161,4 +175,8 @@ end
 
 function love.keyreleased(key)
   
+end
+
+function love.resize(w, h)
+  return push:resize(w, h)
 end
