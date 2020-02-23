@@ -6,7 +6,6 @@ local gamera = require("lib/gamera")
 local lume = require("lib/lume")
 local wf = require("lib/windfield")
 
-
 local function load(lvl)
     local tileW, tileH = 80,80
     local world = wf.newWorld(0,0, true)
@@ -15,15 +14,16 @@ local function load(lvl)
     world:addCollisionClass("Player", {ignores = {"Player"}})
     world:addCollisionClass("Solid")
     world:addCollisionClass("Boulder")
-    
-    m = assets.sfx.firstmusic
-    m:play()
-    m:setLooping(true)
-    world:setQueryDebugDrawing(true)
+
     local map = cartographer.load("lvls/" .. lvl .. ".lua")
     local solidlayer = map:getLayer("Solid")
     for i,gid,gx,gy,x,y in solidlayer:getTiles() do
       mk.rect(world, x, y, tileW, tileH):setType("static")
+    end
+
+
+    for i,gid,gx,gy,x,y in map:getLayer("SmallSolid") do
+      mk.rect(world, x, y, 20, 20):setType("static")
     end
     
     local pl = map:getLayer("Player").objects[1]

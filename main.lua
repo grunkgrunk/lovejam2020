@@ -16,7 +16,11 @@ state = {}
 raydebug = {}
 
 
-function love.load()  
+function love.load()
+  local m = assets.sfx.firstmusic
+  m:play()
+  m:setLooping(true)
+  world:setQueryDebugDrawing(true)
   love.graphics.setDefaultFilter( 'nearest', 'nearest' )
   state = loadlvl("finallvl")
   p(state)
