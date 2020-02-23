@@ -70,7 +70,7 @@ local series = {
         spd = 0.2,
     },
     {
-        x = 300,
+        x = 280,
         y = 280,
         limit = 700,
         text = "Get ready to teleport!",
@@ -120,7 +120,7 @@ local series = {
         img = 4
     },
     {
-        x = 100,
+        x = 90,
         y = 500,
         limit = 1000,
         text = "Looks like 'dr. Pseudo' forgot to remove the test animal",
@@ -155,6 +155,9 @@ function intro:enter()
     m:setLooping(true)
     texttimer = nextTimer()
    
+end
+function intro:exit()
+    love.audio.stop(m)
 end
 
 function intro:update(dt)
