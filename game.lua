@@ -66,7 +66,7 @@ local function playermove(world, player)
 
     local hx, hy = x + v.x, y + v.y
     local nv = v:normalized()
-    local l = 40 
+    local l = 40
     state.world:rayCast(
       hx,
       hy,
