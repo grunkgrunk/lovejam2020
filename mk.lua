@@ -84,6 +84,8 @@ function mk.player(world, x, y)
   local o = {
     sx = 1,
     sy = 1,
+    tx = 0,
+    ty = 0,
     width = w,
     height = h,
     leg = leg,
@@ -108,6 +110,7 @@ function mk.player(world, x, y)
 
       if o.canauch then
         if (v > 400) then
+          o.canauch = false
           local x, y = leg:getPosition()
           local excl = {"auch!", "ow!", "ahhh!", "argg!", "av!", "ugh!", "bonk!", "bam!"}
 
@@ -120,9 +123,10 @@ function mk.player(world, x, y)
               o.auch = false
             end
           )
-          assets.sfx.stortsmack:play()
+          assets.sfx["av" .. lume.randomchoice({1, 2, 3})]:play()
           screen:setShake(5)
         elseif (v > 250) then
+          o.canauch = false
           o.smallauch = true
           t:after(
             0.1,

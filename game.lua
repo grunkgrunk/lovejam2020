@@ -75,7 +75,12 @@ local function playermove(world, player)
       function(fixt, x, y, xn, yn, frac)
         if not player.holdjoint then
           local j = world:addJoint("RopeJoint", leg, fixt:getBody(), hx, hy, x, y, l, true)
+          assets.sfx.tongue:setVolume(10)
+          assets.sfx.tongue:play()
           player.holdjoint = j
+          player.tx = hx
+          player.ty = hy
+          flux.to(player, 0.5, {tx = x, ty = y}):ease("elasticout")
         end
         return 1
       end
@@ -112,8 +117,7 @@ function game:draw()
         love.graphics.setLineWidth(5)
         love.graphics.setLineStyle("smooth")
         love.graphics.setColor(172 / 255, 50 / 255, 50 / 255)
-        local diff = (vector(x2, y2) - vector(x1, y1)):normalized() * 0
-        love.graphics.line(x1, y1, x2 + diff.x, y2 + diff.y)
+        love.graphics.line(x1, y1, state.player.tx, state.player.ty)
       end
 
       setFontSize(32)
