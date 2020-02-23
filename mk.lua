@@ -2,7 +2,7 @@ local timer = require("lib/timer")
 local lume = require("lib/lume")
 local mk = {}
 local flux = require("lib/flux")
-
+local colors = require("colors")
 function mk.boulder(world, x, y)
   local c = mk.circle(world, x, y, 40)
   c:setCollisionClass("Solid")
@@ -53,8 +53,9 @@ function mk.texttimer(txt, spd, every)
   return o
 end
 
-function mk.exclaim(txt,x,y,r)
+function mk.exclaim(txt, x, y, r)
   local f = flux.group()
+  local c = lume.shuffle(colors.contrasts)
   local o = {
     x = x,
     y = y,
@@ -62,12 +63,17 @@ function mk.exclaim(txt,x,y,r)
     txt = txt,
     flux = f,
     alpha = 1,
-    dead = false
+    dead = false,
+    c1 = c[1],
+    c2 = c[2]
   }
-  f:to(o,0.3,{alpha = 0}):delay(1):oncomplete(function() o.dead = true end)
+  f:to(o, 0.3, {alpha = 0}):delay(1):oncomplete(
+    function()
+      o.dead = true
+    end
+  )
   return o
 end
-
 
 function mk.player(world, x, y)
   local exclaims = {}
@@ -85,8 +91,9 @@ function mk.player(world, x, y)
     holding = false,
     auch = false,
     smallauch = false,
+    canauch = true,
     timer = t,
-    exclaims = exclaims,
+    exclaims = exclaims
   }
 
   -- position players' feet at where the arrow points
@@ -99,33 +106,39 @@ function mk.player(world, x, y)
       local vx, vy = collider_1:getLinearVelocity()
       local v = math.abs(vx) + math.abs(vy) + math.abs(collider_1:getAngularVelocity())
 
-      if (v > 400) then
+      if o.canauch then
+        if (v > 400) then
+          local x, y = leg:getPosition()
+          local excl = {"auch!", "ow!", "ahhh!", "argg!", "av!", "ugh!", "bonk!", "bam!"}
 
-        local x,y = leg:getPosition()
-        local excl = {"auch!", "ow!", "ahhh!", "argg!", "av!", "ugh!", "bonk!", "bam!"}
-
-        exclaims[#exclaims+1] = mk.exclaim(lume.randomchoice(excl),x,y-80+lume.random(-10,10),lume.random(-0.5,0.5))
-        o.auch = true
-        t:after(
-          0.2,
-          function()
-            o.auch = false
-          end
-        )
-        assets.sfx.stortsmack:play()
-        screen:setShake(5)
-      elseif (v > 250) then
-        
-        o.smallauch = true
-        t:after(
-          0.1,
-          function()
-            o.smallauch = false
-          end
-        )
-        assets.sfx.smack:play()
-        screen:setShake(2)
+          exclaims[#exclaims + 1] =
+            mk.exclaim(lume.randomchoice(excl), x, y - 80 + lume.random(-10, 10), lume.random(-0.5, 0.5))
+          o.auch = true
+          t:after(
+            0.2,
+            function()
+              o.auch = false
+            end
+          )
+          assets.sfx.stortsmack:play()
+          screen:setShake(5)
+        elseif (v > 250) then
+          o.smallauch = true
+          t:after(
+            0.1,
+            function()
+              o.smallauch = false
+            end
+          )
+          assets.sfx.smack:play()
+          screen:setShake(2)
+        end
       end
+    end
+  )
+  leg:setPostSolve(
+    function(c1, c2, c)
+      o.canauch = true
     end
   )
   return o
@@ -134,6 +147,7 @@ end
 function mk.chick(world, x, y)
   x, y = x, y - 200
   local r = mk.rect(world, x, y, 30, 200)
+  r:setCollisionClass("Chicken")
   return r
 end
 

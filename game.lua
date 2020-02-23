@@ -117,7 +117,8 @@ function game:draw()
       end
 
       setFontSize(32)
-      lume.each(state.player.exclaims,function (e) drw.text(e.txt,e.x,e.y,3000,nil,e.r, e.alpha) end)
+      lume.each(state.player.exclaims,function (e) drw.exclaim(e.txt,e.x,e.y,e.r, e.alpha, e.c1, e.c2) end)
+
     end
   )
 
@@ -141,6 +142,17 @@ function game:update(dt)
   cam:setPosition(x, y - 60)
   playermove(world, player)
   player.timer:update(dt)
+
+
+  if player.leg:enter("Chicken") then
+    assets.sfx.bowl:play()
+    local d = player.leg:getEnterCollisionData("Chicken").collider
+    local x,y = player.leg:getPosition() 
+    local a,b = d:getPosition() 
+    local dir = (vector(a,b) - vector(x,y)):normalized() * 10000
+
+    d:applyLinearImpulse(dir.x, dir.y)
+  end
 end
 
 function game:keypressed(key)
@@ -181,9 +193,11 @@ function game:keypressed(key)
     if found then
       player.leg:setLinearVelocity(0,0)
       flux.to(player, 0.1, {sx = 0.9, sy = 1.3}):after(0.2, {sx = 1, sy = 1})
-      -- assets.sfx.jump:play()
+      assets.sfx.jump:setVolume(0.4)
+      assets.sfx.jump:play()
+      player.canauch = false
       local d = vector.fromPolar(player.leg:getAngle() - math.pi / 2)
-      local v = d * 1400
+      local v = d * 2000
       player.leg:applyLinearImpulse(v.x, v.y)
     end
   end

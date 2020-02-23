@@ -16,6 +16,7 @@ local function load(lvl)
     world:addCollisionClass("Player", {ignores = {"Player"}})
     world:addCollisionClass("Solid")
     world:addCollisionClass("Boulder")
+    world:addCollisionClass("Chicken")
 
     local map = cartographer.load("lvls/" .. lvl .. ".lua")
     local solidlayer = map:getLayer("Solid")
