@@ -18,12 +18,12 @@ function loadlvl(lvl)
   
   
   world:addCollisionClass("Player", {ignores = {"Player"}})
-  world:addCollisionClass("Leg", {ignores = {"Player"}})
   world:addCollisionClass("Solid")
-  world:addCollisionClass("Foot", {ignores = {"Player"}})
-  world:addCollisionClass("Hand", {ignores = {"Player"}, enter = {"Solid"} })
+  world:addCollisionClass("Boulder")
   
   assets.sfx.firstmusic:play()
+
+  -- Remove this!
   world:setQueryDebugDrawing(true)
   local map = cartographer.load("lvls/" .. lvl .. ".lua")
   local solidlayer = map:getLayer("Solid")
@@ -33,6 +33,10 @@ function loadlvl(lvl)
   
   local pl = map:getLayer("Player").objects[1]
   local player = mkplayer(world, pl.x, pl.y)
+
+
+  local b = map:getLayer("Boulder").objects[1]
+  mkboulder(world, b.x, b.y)
   
   local left, top, right, bottom = solidlayer:getPixelBounds()
   local cam = gamera.new(left,top,right,bottom)
@@ -59,7 +63,6 @@ function mkplayer(world, x, y)
   leg:setFriction(10)
   leg:setMass(3.5)
   leg:setPreSolve(function(collider_1, collider_2, contact)
-    --if(collider_2.getCollisionClass() == 'Ground' or collider_1.getCollisionClass() == 'Ground') then
       local vx,vy = collider_1:getLinearVelocity()
       local v = math.abs(vx)+math.abs(vy) + math.abs(collider_1:getAngularVelocity())
   
@@ -68,11 +71,7 @@ function mkplayer(world, x, y)
       elseif(v>250)then
         assets.sfx.smack:play()
       end
-    --end
   end)
-
-  -- world:addJoint('WeldJoint', arm, bind, x + w/2,y)
-  -- world:addJoint('WeldJoint', hand, arm, x + w/2, y - h)
   return {
     width = w,
     height = h,
@@ -80,6 +79,12 @@ function mkplayer(world, x, y)
     grounded = false,
     holding = false
   }
+end
+
+function mkboulder(world, x,y, r)
+  local c = world:newCircleCollider(x, y, r)
+  c:setCollisionClass("Solid")
+  return c 
 end
 
 function mksolid(world, x, y, w, h)
@@ -94,6 +99,13 @@ function mkcircle(world, x, y, r)
   c:setType("static")
   c:setCollisionClass("Solid")
   return c 
+end
+
+function mkboss(world, x, y, w, h)
+  local ground = world:newRectangleCollider(x, y, w, h) 
+  ground:setType('static') -- Types can be 'static', 'dynamic' or 'kinematic'. Defaults to 'dynamic'
+  ground:setCollisionClass("Solid")
+  return ground
 end
 
 function love.load()  
