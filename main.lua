@@ -30,7 +30,7 @@ function love.load()
   font = assets.font.Shaka_Pow
   love.graphics.setFont(font(64))
 
-  Gamestate.switch(splash)
+  Gamestate.switch(game)
 end
 
 function love.draw()

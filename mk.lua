@@ -69,6 +69,8 @@ function mk.player(world, x, y)
         end
     end)
     return {
+      sx = 1,
+      sy = 1,
       width = w,
       height = h,
       leg = leg,
