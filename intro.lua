@@ -11,8 +11,8 @@ local index = 1
 
 local series = {
     {
-        x = 250,
-        y = 100,
+        x = 320,
+        y = 300,
         limit = 1000,
         text = "You are P-Man!",
         spd = 0.2,
@@ -27,111 +27,111 @@ local series = {
     },
     {
         x = 450,
-        y = 100,
+        y = 280,
         limit = 700,
         text = "BAM!!!",
         spd = 0.2,
     },
     {
-        x = 450,
-        y = 100,
+        x = 250,
+        y = 200,
         limit = 700,
-        text = "You have save the world from 'evil chick'",
+        text = "You have to save the world from 'evil chick'",
         spd = 0.2,
     },
     {
-        x = 10,
-        y = 400,
-        limit = 400,
+        x = 0,
+        y = 550,
+        limit = 1000,
         text = "She is hiding at the peak of the ever feared 'mount evil'",
-        spd = 0.1,
+        spd = 0.22,
         img = 2
     },
     {
-        x = 450,
-        y = 100,
+        x = 420,
+        y = 280,
         limit = 700,
         text = "kapow!!!",
         spd = 0.2,
     },
     {
-        x = 450,
-        y = 100,
-        limit = 700,
+        x = 0,
+        y = 550,
+        limit = 1400,
         text = "With help from 'dr. Pseudo' you will quantum-teleport directly to the top",
         spd = 0.2,
         img = 3
     },
     {
-        x = 450,
-        y = 100,
+        x = 380,
+        y = 280,
         limit = 700,
         text = "SCIENCE!!!!!!",
         spd = 0.2,
     },
     {
-        x = 450,
-        y = 100,
+        x = 300,
+        y = 280,
         limit = 700,
         text = "Get ready to teleport!",
         spd = 0.2,
     },
     {
         x = 450,
-        y = 100,
+        y = 280,
         limit = 700,
         text = "3...",
         spd = 0.2,
     },
     {
         x = 450,
-        y = 100,
+        y = 280,
         limit = 700,
         text = "2...",
         spd = 0.2,
     },
     {
         x = 450,
-        y = 100,
+        y = 280,
         limit = 700,
         text = "1...",
         spd = 0.2,
     },
     {
         x = 450,
-        y = 100,
+        y = 280,
         limit = 700,
         text = "0...",
         spd = 0.2,
     },
     {
         x = 450,
-        y = 100,
+        y = 280,
         limit = 700,
         text = "-1...",
         spd = 0.2,
     },
     {
-        x = 450,
-        y = 100,
+        x = 380,
+        y = 500,
         limit = 700,
         text = "ohoh...",
         spd = 0.2,
         img = 4
     },
     {
-        x = 450,
-        y = 100,
-        limit = 700,
+        x = 100,
+        y = 500,
+        limit = 1000,
         text = "Looks like 'dr. Pseudo' forgot to remove the test animal",
         spd = 0.2,
         img = 4
     },
     {
-        x = 450,
-        y = 100,
+        x = 400,
+        y = 280,
         limit = 700,
-        text = "Good luck anyways, P-man.",
+        text = "Good luck anyways, P-man!!",
         spd = 0.2,
         img = 5
     }
@@ -150,7 +150,9 @@ function nextTimer()
 end
 
 function intro:enter()
-    p(Gamestate)
+    local m = assets.sfx.intromusictotal
+    m:play()
+    m:setLooping(true)
     texttimer = nextTimer()
    
 end
