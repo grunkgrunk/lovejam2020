@@ -13,6 +13,7 @@ local loadlvl = require("loadlvl")
 
 local game = {}
 
+
 local function mouthpos(player)
   local x, y = leg:getPosition()
   local w = player.width / 2
@@ -87,7 +88,7 @@ end
 
 function game:draw()
   local cam, world, map = state.cam, state.world, state.map
-  cam:setScale(2.5)
+  cam:setScale(2)
   cam:draw(
     function(l, t, w, h)
       love.graphics.clear(50 / 255, 60 / 255, 57 / 255)
@@ -98,7 +99,6 @@ function game:draw()
       map:draw()
       drw.player(state.player)
       drw.boulder(state.boulder)
-
       lume.each(state.chicks, drw.chick)
 
       if debug then
@@ -115,6 +115,9 @@ function game:draw()
         local diff = (vector(x2, y2) - vector(x1, y1)):normalized() * 0
         love.graphics.line(x1, y1, x2 + diff.x, y2 + diff.y)
       end
+
+      setFontSize(32)
+      lume.each(state.player.exclaims,function (e) drw.text(e.txt,e.x,e.y,3000,nil,e.r, e.alpha) end)
     end
   )
 
@@ -128,13 +131,16 @@ function game:update(dt)
   if state.texttimer then
     state.texttimer.timer:update(dt)
   end
-
+  
   local world, player, cam = state.world, state.player, state.cam
+  lume.each(player.exclaims, function(e) e.flux:update(dt) end)
+  p(player.exclaims)
   world:update(dt)
   timer.update(dt)
   local x, y = player.leg:getPosition()
   cam:setPosition(x, y - 60)
   playermove(world, player)
+  player.timer:update(dt)
 end
 
 function game:keypressed(key)
@@ -189,6 +195,14 @@ function game:enter()
   m:play()
   m:setLooping(true)
   state = loadlvl("finallvl")
+  local p = state.player
+  p.sx = 0
+  p.sy = 0
+  p.leg:setType("static")
+  flux.to(p, 1, {sx = 1, sy = 1}):ease("elasticout"):delay(0.5):oncomplete(function()
+    p.leg:setType("dynamic")
+  end)
+
 end
 
 return game
