@@ -13,3 +13,5 @@
 - Sounds: When jump, when hit in the head, when land
 
 - Draw player sprite
+
+- Enable collision for joints
