@@ -58,6 +58,7 @@ local function load(lvl)
       lvl = lvl,
       boulder = boulder,
       chicks = chicks,
+      texttimer = mk.texttimer("Hey you how is it?", 0.2)
     }
   end
 

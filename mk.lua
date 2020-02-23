@@ -1,4 +1,6 @@
 
+local timer = require("lib/timer")
+local lume = require("lib/lume")
 local mk = {}
 
 function mk.boulder(world, x,y)
@@ -21,6 +23,31 @@ function mk.circle(world, x, y, r)
     c:setCollisionClass("Solid")
     return c 
 end
+
+function mk.texttimer(txt, spd, every)
+    every = every or function() end
+    local finaltxt = lume.split(txt)
+    local t = timer.new()
+    local o = {
+        n = 1,
+        finaltxt = finaltxt,
+        currenttxt = "",
+        timer = t,
+        done = false,
+    }
+    t:every(spd, function()
+        every()
+        o.currenttxt = o.currenttxt .. " " .. o.finaltxt[o.n]
+        print(o.currenttxt)
+        if o.n == #o.finaltxt then 
+            o.done = true
+        end
+        o.n = o.n + 1
+    end, #finaltxt)
+    
+    return o
+end
+
 
 function mk.player(world, x, y)
     local w,h = 35, 70
