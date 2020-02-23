@@ -10,12 +10,12 @@ local p = function(x) print(inspect(x)) end
 debug = true
 assets = require('lib/cargo').init('assets')
 state = {}
+raydebug = {}
 
 function loadlvl(lvl)
   local tileW, tileH = 80,80
   local world = wf.newWorld(0,0, true)
   world:setGravity(0, 512)
-  
   
   world:addCollisionClass("Player", {ignores = {"Player"}})
   world:addCollisionClass("Solid")
@@ -36,11 +36,10 @@ function loadlvl(lvl)
 
 
   local b = map:getLayer("Boulder").objects[1]
-  mkboulder(world, b.x, b.y,8)
+  local boulder = mkboulder(world, b.x, b.y,20)
   
   local left, top, right, bottom = solidlayer:getPixelBounds()
   local cam = gamera.new(left,top,right,bottom)
-
   
 
   cam:setScale(2)
@@ -49,8 +48,15 @@ function loadlvl(lvl)
     world = world,
     player = player,
     map = map,
-    lvl = lvl
+    lvl = lvl,
+    boulder = boulder
   }
+end
+
+function boulderdraw(boulder)
+  x,y = boulder:getPosition()
+  r = boulder:getAngle()
+  love.graphics.draw(assets.art.boulder, x,y, r, 1, 1, 45, 45)
 end
 
 function mkplayer(world, x, y)
@@ -82,8 +88,12 @@ function mkplayer(world, x, y)
 end
 
 function mkboulder(world, x,y, r)
-  local c = world:newCircleCollider(x, y, r)
+  local c = world:newCircleCollider(x, y, r*2)
   c:setCollisionClass("Solid")
+  -- c:setType("static")
+  --c:setFriction(10)
+  c:setAngularDamping(1)
+  c:setMass(4)
   return c 
 end
 
@@ -122,6 +132,13 @@ function love.draw()
     end
     map:draw()
     playerdraw(state.player)
+    boulderdraw(state.boulder)
+
+    if debug then
+      for i,v in ipairs(raydebug) do
+        love.graphics.line(v.from.x, v.from.y, v.to.x, v.to.y)
+      end
+    end
   end)
 
 end
@@ -132,7 +149,6 @@ function playerdraw(player)
   local x,y = leg:getPosition()
   local r = leg:getAngle()
   -- love.graphics.draw(assets.art.player, x,y, r, 0.2, 0.2, 100, 801)
-
   x,y = leg:getPosition()
   r = leg:getAngle()
   -- local s = assets.art.arm
@@ -179,7 +195,6 @@ function playermove(world, player)
   if love.keyboard.isDown("space") then
     player.holding = true
     local x,y = leg:getPosition()
-    -- player.col:applyLinearImpulse(v.x, v.y)
     local w = player.width/2
     local h = player.height/2
 
@@ -188,7 +203,6 @@ function playermove(world, player)
 
     local hx,hy = x + v.x, y + v.y
     local nv = v:normalized()
-    --local col = world:queryCircleArea(hx,hy, w + 6, {'Solid'})
     local l = 30
     state.world:rayCast(hx,hy,hx+nv.x*l,hy+nv.y*l,function(fixt,x,y,xn,yn,frac) 
         if not player.holdjoint then
@@ -244,18 +258,26 @@ function love.keypressed(key)
 
 
     local r = player.leg:getAngle()
-    local v = vector.fromPolar(r - math.pi / 2, h)
+    local dir = vector.fromPolar(r + math.pi / 2, h - 2)
+    local pos = vector(x,y)
+    local bottom = pos + dir
+    local l = w
+    local found = false
 
-    local hx,hy = x - v.x, y - v.y
-    local col = state.world:queryCircleArea(hx,hy, w, {'Solid'})
-    
-    if #col > 0 then
+    for i=r - 0.2, math.pi + r + 0.2, 0.2 do
+      local nv = vector.fromPolar(i, l)
+      local castto = bottom + nv
+      raydebug[#raydebug + 1] = {from = bottom, to = bottom + nv}
+      state.world:rayCast(bottom.x,bottom.y,castto.x,castto.y,function(fixt,x,y,xn,yn,frac)
+        if found then return 0 end
+        found = true
+      return 1 end)
+    end
+    if found then 
       local d = vector.fromPolar(player.leg:getAngle() - math.pi / 2)
       local v = d * 1000
       player.leg:applyLinearImpulse(v.x, v.y)
     end
-    
-    -- player.arm:applyLinearImpulse(v.x, v.y)  
   end
 end 
 
