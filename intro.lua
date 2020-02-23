@@ -26,11 +26,14 @@ local series = {
         img = 1
     },
     {
-        x = 450,
-        y = 280,
-        limit = 700,
+        x = 0,
+        y = gameHeight / 2,
+        align = "center",
+        align = "center",
+        limit = gameWidth,
         text = "BAM!!!",
         spd = 0.2,
+        fontSize = 300,
     },
     {
         x = 250,
@@ -48,11 +51,13 @@ local series = {
         img = 2
     },
     {
-        x = 420,
-        y = 280,
-        limit = 700,
+        x = 0,
+        y = gameHeight / 2,
+        align = "center",
+        limit = gameWidth,
         text = "kapow!!!",
         spd = 0.2,
+        fontSize = 300,
     },
     {
         x = 0,
@@ -63,58 +68,71 @@ local series = {
         img = 3
     },
     {
-        x = 380,
-        y = 280,
-        limit = 700,
-        text = "SCIENCE!!!!!!",
+        x = 0,
+        y = gameHeight / 2,
+        align = "center",
+        limit = gameWidth,
+        text = "SCIENCE!",
         spd = 0.2,
+        fontSize = 280,
     },
     {
-        x = 280,
-        y = 280,
-        limit = 700,
+        x = 0,
+        y = gameHeight / 2,
+        align = "center",
+        limit = gameWidth,
         text = "Get ready to teleport!",
         spd = 0.2,
     },
     {
-        x = 450,
-        y = 280,
-        limit = 700,
+        x = 0,
+        y = gameHeight / 2,
+        align = "center",
+        limit = gameWidth,
         text = "3...",
         spd = 0.2,
+        fontSize = 100
     },
     {
-        x = 450,
-        y = 280,
-        limit = 700,
+        x = 0,
+        y = gameHeight / 2,
+        align = "center",
+        limit = gameWidth,
         text = "2...",
         spd = 0.2,
+        fontSize = 200
     },
     {
-        x = 450,
-        y = 280,
-        limit = 700,
+        x = 0,
+        y = gameHeight / 2,
+        align = "center",
+        limit = gameWidth,
         text = "1...",
         spd = 0.2,
+        fontSize = 300
     },
     {
-        x = 450,
-        y = 280,
-        limit = 700,
+        x = 0,
+        y = gameHeight / 2,
+        align = "center",
+        limit = gameWidth,
         text = "0...",
         spd = 0.2,
+        fontSize = 450
     },
     {
-        x = 450,
-        y = 280,
-        limit = 700,
-        text = "-1...",
+        x = 0,
+        y = gameHeight / 2,
+        align = "center",
+        limit = gameWidth,
+        text = "-1...?",
         spd = 0.2,
+        fontSize = 64
     },
     {
-        x = 380,
+        x = 400,
         y = 500,
-        limit = 700,
+        limit = gameWidth,
         text = "ohoh...",
         spd = 0.2,
         img = 4
@@ -128,9 +146,10 @@ local series = {
         img = 4
     },
     {
-        x = 400,
-        y = 280,
-        limit = 700,
+        x = 0,
+        y = gameHeight / 2,
+        align = "center",
+        limit = gameWidth,
         text = "Good luck anyways, P-man!!",
         spd = 0.2,
         img = 5
@@ -154,10 +173,10 @@ function intro:enter()
     m:play()
     m:setLooping(true)
     texttimer = nextTimer()
-   
 end
-function intro:exit()
-    love.audio.stop(m)
+function intro:leave()
+    print("see ya")
+    love.audio.stop(assets.sfx.intromusictotal)
 end
 
 function intro:update(dt)
@@ -171,12 +190,13 @@ function intro:draw()
     if introdone then return end
     if not texttimer then return end
     local c = series[index]
+    setFontSize(c.fontSize or 64)
     local x,y, lim = c.x,c.y, c.limit
     if c.img then
         love.graphics.draw(assets.art.comic[c.img], 0,0)
     end
     if texttimer then
-        drw.text(texttimer.currenttxt, x,y, lim)
+        drw.text(texttimer.currenttxt, x,y, lim, c.align)
     end
 end
 

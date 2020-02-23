@@ -19,12 +19,17 @@ function drw.player(player)
     love.graphics.draw(assets.art.pengu, x, y, r, 0.4 * player.sx, 0.4 * player.sy, 75, 120)
 end
 
-function drw.text(txt, x, y, lim)
+function drw.text(txt, x, y, lim, align)
     love.graphics.push()
+    if align == "center" then
+        local f = love.graphics.getFont()
+        local textobj = love.graphics.newText(f, txt)
+        love.graphics.translate(0, -textobj:getHeight() / 2)
+    end
     love.graphics.setColor(251 / 255, 242 / 255, 54 / 255)
-    love.graphics.printf(txt, x, y, lim)
+    love.graphics.printf(txt, x, y, lim, align)
     love.graphics.setColor(1, 0, 0)
-    love.graphics.printf(txt, x + 2, y + 3, lim)
+    love.graphics.printf(txt, x + 2, y + 3, lim, align)
     love.graphics.pop()
 end
 
