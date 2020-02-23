@@ -65,7 +65,7 @@ local function playermove(world, player)
 
     local hx, hy = x + v.x, y + v.y
     local nv = v:normalized()
-    local l = 30
+    local l = 40 
     state.world:rayCast(
       hx,
       hy,
@@ -152,10 +152,12 @@ function game:keypressed(key)
     local l = w
     local found = false
 
-    for i = r - 0.2, math.pi + r + 0.2, 0.2 do
-      local nv = vector.fromPolar(i, l)
-      local castto = bottom + nv
-      raydebug[#raydebug + 1] = {from = bottom, to = bottom + nv}
+    for i = r, math.pi + r, 0.2 do
+      local nv = vector.fromPolar(i, 1)
+      local dirnorm = dir:normalized() 
+      local sc =(dirnorm.x*nv.x+dirnorm.y*nv.y)*l*2+0.1
+      local castto = bottom + nv*sc
+      raydebug[#raydebug + 1] = {from = bottom, to = bottom + nv*sc}
       state.world:rayCast(
         bottom.x,
         bottom.y,
@@ -171,10 +173,11 @@ function game:keypressed(key)
       )
     end
     if found then
+      player.leg:setLinearVelocity(0,0)
       flux.to(player, 0.1, {sx = 0.9, sy = 1.3}):after(0.2, {sx = 1, sy = 1})
       -- assets.sfx.jump:play()
       local d = vector.fromPolar(player.leg:getAngle() - math.pi / 2)
-      local v = d * 1000
+      local v = d * 1400
       player.leg:applyLinearImpulse(v.x, v.y)
     end
   end

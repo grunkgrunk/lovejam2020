@@ -1,6 +1,7 @@
 Gamestate = require("lib/gamestate")
 assets = require("lib/cargo").init("assets")
 screen = require("lib/shack")
+gameWidth, gameHeight = 1080, 720 --fixed game resolution
 
 local lume = require("lib/lume")
 local inspect = require("lib/inspect")
@@ -19,13 +20,16 @@ debug = true
 state = {}
 raydebug = {}
 
+
+function setFontSize(n)
+  local font = assets.font.Shaka_Pow
+  love.graphics.setFont(font(n))
+end 
+
 function love.load()
   love.graphics.setDefaultFilter("nearest", "nearest")
-  font = assets.font.Shaka_Pow
-  love.graphics.setFont(font(64))
-  local gameWidth, gameHeight = 1080, 720 --fixed game resolution
+  
   local windowWidth, windowHeight = love.window.getDesktopDimensions()
-
   windowWidth, windowHeight = windowWidth * .7, windowHeight * .7 --make the window a bit smaller than the screen itself
 
   push:setupScreen(gameWidth, gameHeight, windowWidth, windowHeight, {fullscreen = false})
