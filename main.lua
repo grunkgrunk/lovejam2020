@@ -6,121 +6,20 @@ local inspect = require("lib/inspect")
 local gamera = require("lib/gamera")
 local timer = require("lib/timer")
 local p = function(x) print(inspect(x)) end
+local mk = require("mk")
+local drw = require("drw")
+local loadlvl = require("loadlvl")
 
 debug = true
 assets = require('lib/cargo').init('assets')
 state = {}
 raydebug = {}
 
-function loadlvl(lvl)
-  local tileW, tileH = 80,80
-  local world = wf.newWorld(0,0, true)
-  world:setGravity(0, 512)
-  
-  world:addCollisionClass("Player", {ignores = {"Player"}})
-  world:addCollisionClass("Solid")
-  world:addCollisionClass("Boulder")
-  
-  m = assets.sfx.firstmusic
-  m:play()
-  m:setLooping(true)
-  world:setQueryDebugDrawing(true)
-  local map = cartographer.load("lvls/" .. lvl .. ".lua")
-  local solidlayer = map:getLayer("Solid")
-  for i,gid,gx,gy,x,y in solidlayer:getTiles() do
-    mksolid(world, x, y, tileW, tileH)
-  end
-  
-  local pl = map:getLayer("Player").objects[1]
-  local player = mkplayer(world, pl.x, pl.y)
-
-
-  local b = map:getLayer("Boulder").objects[1]
-  local boulder = mkboulder(world, b.x, b.y,20)
-  
-  local left, top, right, bottom = solidlayer:getPixelBounds()
-  local cam = gamera.new(left,top,right,bottom)
-  
-
-  cam:setScale(2)
-  return {
-    cam = cam,
-    world = world,
-    player = player,
-    map = map,
-    lvl = lvl,
-    boulder = boulder
-  }
-end
-
-function boulderdraw(boulder)
-  x,y = boulder:getPosition()
-  r = boulder:getAngle()
-  love.graphics.draw(assets.art.boulder, x,y, r, 1, 1, 45, 45)
-end
-
-function mkplayer(world, x, y)
-  local w,h = 35, 70
-  -- position players' feet at where the arrow points
-  y = y - h
-  leg = world:newRectangleCollider(x, y, w, h)
-  leg:setCollisionClass("Player")
-  leg:setObject(leg)
-  leg:setFriction(10)
-  leg:setMass(3.5)
-  leg:setPreSolve(function(collider_1, collider_2, contact)
-      local vx,vy = collider_1:getLinearVelocity()
-      local v = math.abs(vx)+math.abs(vy) + math.abs(collider_1:getAngularVelocity())
-  
-      if(v>400) then
-        assets.sfx.stortsmack:play()
-      elseif(v>250)then
-        assets.sfx.smack:play()
-      end
-  end)
-  return {
-    width = w,
-    height = h,
-    leg = leg,
-    grounded = false,
-    holding = false
-  }
-end
-
-function mkboulder(world, x,y, r)
-  local c = world:newCircleCollider(x, y, r*2)
-  c:setCollisionClass("Solid")
-  -- c:setType("static")
-  --c:setFriction(10)
-  c:setAngularDamping(1)
-  c:setMass(4)
-  return c 
-end
-
-function mksolid(world, x, y, w, h)
-  local ground = world:newRectangleCollider(x, y, w, h) 
-  ground:setType('static') -- Types can be 'static', 'dynamic' or 'kinematic'. Defaults to 'dynamic'
-  ground:setCollisionClass("Solid")
-  return ground
-end
-
-function mkcircle(world, x, y, r)
-  local c = world:newCircleCollider(x, y, r)
-  c:setType("static")
-  c:setCollisionClass("Solid")
-  return c 
-end
-
-function mkboss(world, x, y, w, h)
-  local ground = world:newRectangleCollider(x, y, w, h) 
-  ground:setType('static') -- Types can be 'static', 'dynamic' or 'kinematic'. Defaults to 'dynamic'
-  ground:setCollisionClass("Solid")
-  return ground
-end
 
 function love.load()  
   love.graphics.setDefaultFilter( 'nearest', 'nearest' )
   state = loadlvl("finallvl")
+  p(state)
 end
 
 function love.draw()
@@ -131,8 +30,8 @@ function love.draw()
       world:draw()
     end
     map:draw()
-    playerdraw(state.player)
-    boulderdraw(state.boulder)
+    drw.player(state.player.leg)
+    drw.boulder(state.boulder)
 
     if debug then
       for i,v in ipairs(raydebug) do
@@ -141,24 +40,6 @@ function love.draw()
     end
   end)
 
-end
-
-
-function playerdraw(player)
-  local leg = player.leg
-  local x,y = leg:getPosition()
-  local r = leg:getAngle()
-  -- love.graphics.draw(assets.art.player, x,y, r, 0.2, 0.2, 100, 801)
-  x,y = leg:getPosition()
-  r = leg:getAngle()
-  -- local s = assets.art.arm
-  -- if player.holding then
-  --   s = assets.art.almosthold
-  -- end
-  -- if player.holdjoint then
-  --   s = assets.art.hold
-  -- end
-  love.graphics.draw(assets.art.pengu, x,y, r, 0.4, 0.4, 75, 120)
 end
 
 function playermove(world, player)
@@ -224,15 +105,6 @@ function love.update(dt)
   world:update(dt)
   timer.update(dt)
   cam:setPosition(player.leg:getPosition())
-
-  if player.leg:enter("Ground") then
-    
-    player.grounded = true
-  end
-
-  if player.leg:exit("Ground") then
-    player.grounded = false
-  end
 
   playermove(world, player)
 end
