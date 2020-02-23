@@ -47,48 +47,20 @@ function loadlvl(lvl)
 end
 
 function mkplayer(world, x, y)
-  local w,h = 20, 80
+  local w,h = 35, 70
   -- position players' feet at where the arrow points
   y = y - h
   leg = world:newRectangleCollider(x, y, w, h)
   leg:setCollisionClass("Player")
   leg:setObject(leg)
   leg:setFriction(10)
-  --leg:addShape("Foot", "RectangleShape", x, y+h, w + w / 2, 8)
-  
-  --world:addJoint('WeldJoint', foot, leg, x, y+h)
-  --world:addJoint('WeldJoint', foot, leg, x+w, y+h)
-  -- j:setDampingRatio(0.01)
-  bind = world:newCircleCollider(x + w/2, y, w / 2)
-  bind:setMass(0)
-  -- bind:setCollisionClass("Hand")
-  bind:setObject(leg) -- what is this??
-  
-  arm = world:newRectangleCollider(x, y - h, w, h)
-  arm:setCollisionClass("Player")
-  arm:setObject(leg)
-  
-  -- hand = world:newCircleCollider(x + w/2, y - h, w / 4)
-  -- hand:setMass(0)
-  -- hand:setCollisionClass("Hand")
-  -- hand:setObject(leg) -- maybe no collisions
-  
-  local j = world:addJoint('PrismaticJoint', leg, bind, x + w/2,y, 0, -1)
-  j:setLimits(-40, 0) 
-  --j:setDampingRatio(1)
-  --j:setFrequency(50)
-  j=world:addJoint('WeldJoint', arm, bind, x + w/2,y)
-  j:setDampingRatio(100000)
-  j:setFrequency(10000)
+  leg:setMass(3.5)
+  -- world:addJoint('WeldJoint', arm, bind, x + w/2,y)
   -- world:addJoint('WeldJoint', hand, arm, x + w/2, y - h)
   return {
     width = w,
     height = h,
-    arm = arm,
-    -- hand = hand,
     leg = leg,
-    bind = bind,
-    legjoint = j,
     grounded = false,
     holding = false
   }
@@ -127,30 +99,29 @@ end
 
 
 function playerdraw(player)
-  local arm, leg = player.arm, player.leg
+  local leg = player.leg
   local x,y = leg:getPosition()
   local r = leg:getAngle()
-  love.graphics.draw(assets.art.leg, x,y, r, 0.2, 0.2, 100, 801)
+  -- love.graphics.draw(assets.art.player, x,y, r, 0.2, 0.2, 100, 801)
 
-  x,y = arm:getPosition()
-  r = arm:getAngle()
-
-  local s = assets.art.arm
-  if player.holding then
-    s = assets.art.almosthold
-  end
-  if player.holdjoint then
-    s = assets.art.hold
-  end
-
-  love.graphics.draw(s, x,y, r, 0.2, 0.2, 100, 400)
+  x,y = leg:getPosition()
+  r = leg:getAngle()
+  -- local s = assets.art.arm
+  -- if player.holding then
+  --   s = assets.art.almosthold
+  -- end
+  -- if player.holdjoint then
+  --   s = assets.art.hold
+  -- end
+  love.graphics.draw(assets.art.pengu, x,y, r, 0.4, 0.4, 75, 120)
 end
 
 function playermove(world, player)
-  local leg,arm = player.leg, player.arm
-  local ang = 6000
+  local leg = player.leg
+  local ang = 2000
   local jmp = 100
   local up = 80
+  local maxang = 5
   
   local getDir = function()
     return vector.fromPolar(leg:getAngle() - math.pi / 2)
@@ -159,16 +130,14 @@ function playermove(world, player)
   local rotate = function(dir)
     -- player.leg:applyLinearImpulse(0, -up)
     local imp = vector.fromPolar(leg:getAngle()) * dir * ang
-    local x,y = player.bind:getPosition()
+    local x,y = leg:getPosition()
     -- leg:applyLinearImpulse(imp.x, imp.y, x, y)
-    player.bind:applyAngularImpulse(ang * dir)
+    leg:applyAngularImpulse(ang * dir)
   end
-
-
-  --if love.keyboard.isDown("down") and not player.grounded then
-  --  local v = -getDir() * jmp * 10
-  --  player.leg:applyLinearImpulse(v.x, v.y)
-  --end
+  local av = leg:getAngularVelocity()
+  if math.abs(av) > maxang then
+    leg:setAngularVelocity(maxang * lume.sign(av))
+  end
 
   if love.keyboard.isDown("left") then
     rotate(-1)
@@ -180,49 +149,38 @@ function playermove(world, player)
   player.holding = false
   if love.keyboard.isDown("space") then
     player.holding = true
-    v = getDir()
-    local x,y = arm:getPosition()
+    local x,y = leg:getPosition()
     -- player.col:applyLinearImpulse(v.x, v.y)
     local w = player.width/2
     local h = player.height/2
 
-    local r = arm:getAngle()
+    local r = leg:getAngle()
     local v = vector.fromPolar(r - math.pi / 2, h)
 
     local hx,hy = x + v.x, y + v.y
-    local col = world:queryCircleArea(hx,hy, w + 6, {'Solid'})
+    local nv = v:normalized()
+    --local col = world:queryCircleArea(hx,hy, w + 6, {'Solid'})
+    local l = 30
+    state.world:rayCast(hx,hy,hx+nv.x*l,hy+nv.y*l,function(fixt,x,y,xn,yn,frac) 
+        if not player.holdjoint then
+          local j = world:addJoint("RopeJoint", leg, fixt:getBody(), hx,hy,x,y,l)
+          player.holdjoint = j
+        end
+      return 1 end)
     
-    if not player.holdjoint and #col > 0 then
-      local c = col[1]
-      local j = world:addJoint("RevoluteJoint", arm, c, hx,hy )
-      player.holdjoint = j
-    end
+    
   elseif player.holdjoint then
     player.holdjoint:destroy()
     player.holdjoint = nil
   end
-
-  if love.keyboard.isDown("down") then
-    local player = state.player
-    local d = vector.fromPolar(player.leg:getAngle() - math.pi / 2)
-    local v = d * 100
-    player.leg:applyLinearImpulse(v.x, v.y)
-    player.arm:applyLinearImpulse(-v.x, -v.y)
-  else
-    local player = state.player
-    local d = vector.fromPolar(player.leg:getAngle() - math.pi / 2)
-    local v = d * 100
-    player.leg:applyLinearImpulse(-v.x, -v.y)
-    player.arm:applyLinearImpulse(v.x, v.y)
-  end
 end
 
 function love.update(dt)
-  require("lib/lurker").update()
+  -- require("lib/lurker").update()
   local world, player, cam = state.world, state.player, state.cam
   world:update(dt)
   timer.update(dt)
-  cam:setPosition(player.bind:getPosition())
+  cam:setPosition(player.leg:getPosition())
 
   if player.leg:enter("Ground") then
     player.grounded = true
@@ -246,14 +204,31 @@ function love.keypressed(key)
   if key == "d" then 
     debug = not debug
   end
+
+  if key == "up" then
+    local player = state.player
+    local x,y = player.leg:getPosition()
+    -- player.col:applyLinearImpulse(v.x, v.y)
+    local w = player.width/2
+    local h = player.height/2
+
+
+    local r = player.leg:getAngle()
+    local v = vector.fromPolar(r - math.pi / 2, h)
+
+    local hx,hy = x - v.x, y - v.y
+    local col = state.world:queryCircleArea(hx,hy, w, {'Solid'})
+    
+    if #col > 0 then
+      local d = vector.fromPolar(player.leg:getAngle() - math.pi / 2)
+      local v = d * 1000
+      player.leg:applyLinearImpulse(v.x, v.y)
+    end
+    
+    -- player.arm:applyLinearImpulse(v.x, v.y)  
+  end
 end 
 
 function love.keyreleased(key)
-  if key == "down" then
-    local player = state.player
-    local d = vector.fromPolar(player.leg:getAngle() - math.pi / 2)
-    local v = d * 1000 * 3
-    player.leg:applyLinearImpulse(-v.x, -v.y)
-    player.arm:applyLinearImpulse(v.x, v.y)
-  end
+  
 end
