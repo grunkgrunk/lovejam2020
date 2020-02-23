@@ -36,7 +36,7 @@ function loadlvl(lvl)
 
 
   local b = map:getLayer("Boulder").objects[1]
-  mkboulder(world, b.x, b.y)
+  mkboulder(world, b.x, b.y,8)
   
   local left, top, right, bottom = solidlayer:getPixelBounds()
   local cam = gamera.new(left,top,right,bottom)
