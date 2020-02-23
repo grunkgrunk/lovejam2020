@@ -1,91 +1,154 @@
-
 local timer = require("lib/timer")
 local lume = require("lib/lume")
 local mk = {}
-
-function mk.boulder(world, x,y)
-    local c = mk.circle(world, x, y, 40)
-    c:setCollisionClass("Solid")
-    c:setAngularDamping(1)
-    c:setMass(4)
-    return c 
-  end
-  
-function mk.rect(world, x, y, w, h)
-    local r = world:newRectangleCollider(x, y, w, h) 
-    -- Types can be 'static', 'dynamic' or 'kinematic'. Defaults to 'dynamic'
-    r:setCollisionClass("Solid")
-    return r
+local flux = require("lib/flux")
+local colors = require("colors")
+function mk.boulder(world, x, y)
+  local c = mk.circle(world, x, y, 40)
+  c:setCollisionClass("Solid")
+  c:setAngularDamping(1)
+  c:setMass(4)
+  return c
 end
-  
+
+function mk.rect(world, x, y, w, h)
+  local r = world:newRectangleCollider(x, y, w, h)
+  -- Types can be 'static', 'dynamic' or 'kinematic'. Defaults to 'dynamic'
+  r:setCollisionClass("Solid")
+  return r
+end
+
 function mk.circle(world, x, y, r)
-    local c = world:newCircleCollider(x, y, r)
-    c:setCollisionClass("Solid")
-    return c 
+  local c = world:newCircleCollider(x, y, r)
+  c:setCollisionClass("Solid")
+  return c
 end
 
 function mk.texttimer(txt, spd, every)
-    every = every or function() end
-    local finaltxt = lume.split(txt)
-    local t = timer.new()
-    local o = {
-        n = 1,
-        finaltxt = finaltxt,
-        currenttxt = "",
-        timer = t,
-        done = false,
-    }
-    t:every(spd, function()
-        every()
-        o.currenttxt = o.currenttxt .. " " .. o.finaltxt[o.n]
-        print(o.currenttxt)
-        if o.n == #o.finaltxt then 
-            o.done = true
-        end
-        o.n = o.n + 1
-    end, #finaltxt)
-    
-    return o
+  every = every or function()
+    end
+  local finaltxt = lume.split(txt)
+  local t = timer.new()
+  local o = {
+    n = 1,
+    finaltxt = finaltxt,
+    currenttxt = "",
+    timer = t,
+    done = false
+  }
+  t:every(
+    spd,
+    function()
+      every()
+      o.currenttxt = o.currenttxt .. " " .. o.finaltxt[o.n]
+      print(o.currenttxt)
+      if o.n == #o.finaltxt then
+        o.done = true
+      end
+      o.n = o.n + 1
+    end,
+    #finaltxt
+  )
+
+  return o
 end
 
+function mk.exclaim(txt, x, y, r)
+  local f = flux.group()
+  local c = lume.shuffle(colors.contrasts)
+  local o = {
+    x = x,
+    y = y,
+    r = r,
+    txt = txt,
+    flux = f,
+    alpha = 1,
+    dead = false,
+    c1 = c[1],
+    c2 = c[2]
+  }
+  f:to(o, 0.3, {alpha = 0}):delay(1):oncomplete(
+    function()
+      o.dead = true
+    end
+  )
+  return o
+end
 
 function mk.player(world, x, y)
-    local w,h = 35, 70
-    -- position players' feet at where the arrow points
-    y = y - h
-    leg = world:newRectangleCollider(x, y, w, h)
-    leg:setCollisionClass("Player")
-    leg:setObject(leg)
-    leg:setFriction(10)
-    leg:setMass(3.5)
-    leg:setPreSolve(function(collider_1, collider_2, contact)
-        local vx,vy = collider_1:getLinearVelocity()
-        local v = math.abs(vx)+math.abs(vy) + math.abs(collider_1:getAngularVelocity())
-    
-        if(v>400) then
+  local exclaims = {}
+  local w, h = 35, 70
+  local t = timer.new()
+  y = y - h
+  leg = world:newRectangleCollider(x, y, w, h)
+  local o = {
+    sx = 1,
+    sy = 1,
+    width = w,
+    height = h,
+    leg = leg,
+    grounded = false,
+    holding = false,
+    auch = false,
+    smallauch = false,
+    canauch = true,
+    timer = t,
+    exclaims = exclaims
+  }
+
+  -- position players' feet at where the arrow points
+  leg:setCollisionClass("Player")
+  leg:setObject(leg)
+  leg:setFriction(10)
+  leg:setMass(3.5)
+  leg:setPreSolve(
+    function(collider_1, collider_2, contact)
+      local vx, vy = collider_1:getLinearVelocity()
+      local v = math.abs(vx) + math.abs(vy) + math.abs(collider_1:getAngularVelocity())
+
+      if o.canauch then
+        if (v > 400) then
+          local x, y = leg:getPosition()
+          local excl = {"auch!", "ow!", "ahhh!", "argg!", "av!", "ugh!", "bonk!", "bam!"}
+
+          exclaims[#exclaims + 1] =
+            mk.exclaim(lume.randomchoice(excl), x, y - 80 + lume.random(-10, 10), lume.random(-0.5, 0.5))
+          o.auch = true
+          t:after(
+            0.2,
+            function()
+              o.auch = false
+            end
+          )
           assets.sfx.stortsmack:play()
-          screen:setShake(50)
-        elseif(v>250)then
+          screen:setShake(5)
+        elseif (v > 250) then
+          o.smallauch = true
+          t:after(
+            0.1,
+            function()
+              o.smallauch = false
+            end
+          )
           assets.sfx.smack:play()
-          screen:setShake(10)
+          screen:setShake(2)
         end
-    end)
-    return {
-      sx = 1,
-      sy = 1,
-      width = w,
-      height = h,
-      leg = leg,
-      grounded = false,
-      holding = false
-    }
-  end
-
-
-function mk.chick(world, x, y)
-    x,y = x, y-200
-    local r = mk.rect(world, x, y, 30, 200)
-    return r
+      end
+    end
+  )
+  leg:setPostSolve(
+    function(c1, c2, c)
+      o.canauch = true
+    end
+  )
+  return o
 end
 
-  return mk
+function mk.chick(world, x, y)
+  x, y = x, y - 200
+  local r = mk.rect(world, x, y, 30, 200)
+  r:setCollisionClass("Chicken")
+  return r
+end
+
+return mk

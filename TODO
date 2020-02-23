@@ -12,8 +12,12 @@
 - Music
 - Sounds: When jump, when hit in the head, when land
 
-- Draw player sprite
-
 - Enable collision for joints
 
 - Screen shake!
+
+- REMOVE DEBUG STUFF
+
+- REMOVE LARGE BLOCK 
+
+- TELEPORT ARRIVAL
