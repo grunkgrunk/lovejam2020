@@ -120,13 +120,17 @@ end
 
 function love.load()  
   love.graphics.setDefaultFilter( 'nearest', 'nearest' )
+  font = assets.font.Shaka_Pow
+  love.graphics.setFont(font(15))
   state = loadlvl("finallvl")
+
 end
 
 function love.draw()
   local cam, world, map = state.cam, state.world, state.map
   cam:draw(function(l,t,w,h) 
     love.graphics.clear(50/255,60/255,57/255)
+    
     if debug then 
       world:draw()
     end
