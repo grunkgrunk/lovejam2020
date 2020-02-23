@@ -12,7 +12,7 @@ assets = require('lib/cargo').init('assets')
 state = {}
 
 function loadlvl(lvl)
-  local tileW, tileH = 16,16
+  local tileW, tileH = 80,80
   local world = wf.newWorld(0,0, true)
   world:setGravity(0, 512)
   
@@ -23,7 +23,9 @@ function loadlvl(lvl)
   world:addCollisionClass("Foot", {ignores = {"Player"}})
   world:addCollisionClass("Hand", {ignores = {"Player"}, enter = {"Solid"} })
   
-  assets.sfx.firstmusic:play()
+  m = assets.sfx.firstmusic
+  m:play()
+  m:setLooping(true)
   world:setQueryDebugDrawing(true)
   local map = cartographer.load("lvls/" .. lvl .. ".lua")
   local solidlayer = map:getLayer("Solid")
@@ -98,12 +100,13 @@ end
 
 function love.load()  
   love.graphics.setDefaultFilter( 'nearest', 'nearest' )
-  state = loadlvl("test")
+  state = loadlvl("finallvl")
 end
 
 function love.draw()
   local cam, world, map = state.cam, state.world, state.map
   cam:draw(function(l,t,w,h) 
+    love.graphics.clear(50/255,60/255,57/255)
     if debug then 
       world:draw()
     end
@@ -179,7 +182,7 @@ function playermove(world, player)
     local l = 30
     state.world:rayCast(hx,hy,hx+nv.x*l,hy+nv.y*l,function(fixt,x,y,xn,yn,frac) 
         if not player.holdjoint then
-          local j = world:addJoint("RopeJoint", leg, fixt:getBody(), hx,hy,x,y,l)
+          local j = world:addJoint("RopeJoint", leg, fixt:getBody(), hx,hy,x,y,l,true)
           player.holdjoint = j
         end
       return 1 end)
