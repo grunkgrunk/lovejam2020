@@ -64,8 +64,10 @@ function mk.player(world, x, y)
     
         if(v>400) then
           assets.sfx.stortsmack:play()
+          screen:setShake(50)
         elseif(v>250)then
           assets.sfx.smack:play()
+          screen:setShake(10)
         end
     end)
     return {
