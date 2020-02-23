@@ -61,7 +61,7 @@ local function playermove(world, player)
     local h = player.height / 2
 
     local r = leg:getAngle()
-    local v = vector.fromPolar(r - math.pi / 2, h)
+    local v = vector.fromPolar(r - math.pi / 2 + 0.30, h)
 
     local hx, hy = x + v.x, y + v.y
     local nv = v:normalized()
@@ -105,6 +105,15 @@ function game:draw()
         for i, v in ipairs(raydebug) do
           love.graphics.line(v.from.x, v.from.y, v.to.x, v.to.y)
         end
+      end
+
+      if state.player.holdjoint then
+        local x1,y1, x2,y2 = state.player.holdjoint:getAnchors()
+        love.graphics.setLineWidth(5)
+        love.graphics.setLineStyle("smooth")
+        love.graphics.setColor(172 / 255, 50 / 255, 50 / 255)
+        local diff = (vector(x2, y2) - vector(x1, y1)):normalized() * 0
+        love.graphics.line(x1, y1, x2 + diff.x, y2 + diff.y)
       end
     end
   )

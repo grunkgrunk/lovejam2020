@@ -1,12 +1,14 @@
 Gamestate = require("lib/gamestate")
-assets = require('lib/cargo').init('assets')
+assets = require("lib/cargo").init("assets")
 screen = require("lib/shack")
 
 local lume = require("lib/lume")
 local inspect = require("lib/inspect")
 local timer = require("lib/timer")
 local push = require("lib/push")
-p = function(x) print(inspect(x)) end
+p = function(x)
+  print(inspect(x))
+end
 local mk = require("mk")
 local drw = require("drw")
 local game = require("game")
@@ -17,29 +19,31 @@ debug = true
 state = {}
 raydebug = {}
 
-local gameWidth, gameHeight = 1080, 720 --fixed game resolution
-local windowWidth, windowHeight = love.window.getDesktopDimensions()
-
-windowWidth, windowHeight = windowWidth*.7, windowHeight*.7 --make the window a bit smaller than the screen itself
-
-push:setupScreen(gameWidth, gameHeight, windowWidth, windowHeight, {fullscreen = false})
-screen:setDimensions(push:getDimensions())
-
 function love.load()
-  love.graphics.setDefaultFilter( 'nearest', 'nearest' )
+  love.graphics.setDefaultFilter("nearest", "nearest")
   font = assets.font.Shaka_Pow
   love.graphics.setFont(font(64))
+  local gameWidth, gameHeight = 1080, 720 --fixed game resolution
+  local windowWidth, windowHeight = love.window.getDesktopDimensions()
+
+  windowWidth, windowHeight = windowWidth * .7, windowHeight * .7 --make the window a bit smaller than the screen itself
+
+  push:setupScreen(gameWidth, gameHeight, windowWidth, windowHeight, {fullscreen = false})
+  screen:setDimensions(push:getDimensions())
 
   Gamestate.switch(game)
 end
 
 function love.draw()
-  push:start()
-  screen:apply()
-  Gamestate.draw()
-  push:finish()
+  if Gamestate.current() == splash then
+    Gamestate.draw()
+  else
+    push:start()
+    screen:apply()
+    Gamestate.draw()
+    push:finish()
+  end
 end
-
 
 function love.update(dt)
   screen:update(dt)
@@ -56,14 +60,14 @@ function love.keypressed(key)
     love.event.quit()
   end
 
-  if key == "d" then 
+  if key == "d" then
     debug = not debug
   end
 
-  if key == "r" then 
+  if key == "r" then
     Gamestate.switch(Gamestate.current())
   end
-end 
+end
 
 function love.resize(w, h)
   return push:resize(w, h)
