@@ -23,7 +23,7 @@ function loadlvl(lvl)
   world:addCollisionClass("Foot", {ignores = {"Player"}})
   world:addCollisionClass("Hand", {ignores = {"Player"}, enter = {"Solid"} })
   
-
+  assets.sfx.firstmusic:play()
   world:setQueryDebugDrawing(true)
   local map = cartographer.load("lvls/" .. lvl .. ".lua")
   local solidlayer = map:getLayer("Solid")
@@ -61,13 +61,11 @@ function mkplayer(world, x, y)
   leg:setPreSolve(function(collider_1, collider_2, contact)
     --if(collider_2.getCollisionClass() == 'Ground' or collider_1.getCollisionClass() == 'Ground') then
       local vx,vy = collider_1:getLinearVelocity()
-      local v2x,v2y = collider_1:getLinearVelocity()
-      local v = math.abs(vx)+math.abs(vy)+math.abs(v2x)+math.abs(v2y)
-      
+      local v = math.abs(vx)+math.abs(vy) + math.abs(collider_1:getAngularVelocity())
   
-      if(v>700) then
-        
-      elseif(v>400):
+      if(v>400) then
+        assets.sfx.stortsmack:play()
+      elseif(v>250)then
         assets.sfx.smack:play()
       end
     --end
