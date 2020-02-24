@@ -382,15 +382,13 @@ function game:enter()
   screen:setShake(20)
   assets.sfx.teleport:play()
   assets.sfx.teleportintro:play()
-  local m = assets.sfx.background
-  timer.after(
-    3,
-    function()
-      m:play()
-      m:setLooping(true)
-    end
-  )
-
+  local m = assets.sfx.background4game
+  m:setVolume(0.5)
+  timer.after(3,function () 
+    m:play() 
+    m:setLooping(true)
+   end )
+  
   state = loadlvl("finallvl")
 
   local p = state.player
