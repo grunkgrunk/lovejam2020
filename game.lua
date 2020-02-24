@@ -138,6 +138,7 @@ end
 function game:draw()
   local cam, world, map = state.cam, state.world, state.map
   cam:setScale(2)
+
   if not fader.complete then
     cam:draw(
       function(l, t, w, h)
@@ -145,14 +146,6 @@ function game:draw()
           world:draw()
         end
         map:draw()
-
-        lume.each(
-          state.tutorial,
-          function(e)
-            local txt = tutor[e.properties.hint]
-            drw.text(txt, e.x, e.y, 1000, nil, 0, 1, {0, 0, 0}, colors.names.red)
-          end
-        )
 
         drw.player(state.player)
         drw.boulder(state.boulder)
@@ -179,15 +172,6 @@ function game:draw()
           love.graphics.line(x1, y1, state.player.tx, state.player.ty)
         end
 
-        setFontSize(32)
-        lume.each(
-          state.player.exclaims,
-          function(e)
-            --love.graphics.draw(assets.art.speechbubble,e.x-50,e.y-50,e.r,0.08,0.08)
-            drw.exclaim(e.txt, e.x, e.y, e.r, e.alpha, e.c1, e.c2)
-          end
-        )
-
         local x, y = state.talk.x, state.talk.y
         if debug then
           love.graphics.setColor(0, 0, 0, 1)
@@ -195,7 +179,29 @@ function game:draw()
         end
       end
     )
+    love.graphics.push()
+    setFontSize(64)
+    lume.each(
+      state.player.exclaims,
+      function(e)
+        local x, y = cam:toScreen(e.x, e.y)
+        drw.exclaim(e.txt, x, y, e.r, e.alpha, e.c1, e.c2)
+      end
+    )
+    setFontSize(70)
+    lume.each(
+      state.tutorial,
+      function(e)
+        local txt = tutor[e.properties.hint]
+        local x, y = cam:toScreen(e.x, e.y)  
+        drw.text(txt, x, y, 1000, nil, 0, 1, {0, 0, 0}, colors.names.red)
+      end
+    )
+    love.graphics.pop()
   end
+
+ 
+
   -- draw the fader
   love.graphics.setColor(fader.r, fader.g, fader.b, fader.a)
   love.graphics.rectangle("fill", 0, 0, gameWidth, gameHeight)
@@ -361,11 +367,14 @@ function game:enter()
   assets.sfx.teleport:play()
   assets.sfx.teleportintro:play()
   local m = assets.sfx.background
-  timer.after(3,function () 
-    m:play() 
-    m:setLooping(true)
-   end )
-  
+  timer.after(
+    3,
+    function()
+      m:play()
+      m:setLooping(true)
+    end
+  )
+
   state = loadlvl("finallvl")
 
   local p = state.player
