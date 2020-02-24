@@ -7,6 +7,8 @@ local texttimer = nil
 local introdone = false
 
 
+local hitsound = function () assets.sfx.hitbrass:play() end
+
 local index = 1
 
 local series = {
@@ -34,6 +36,8 @@ local series = {
         text = "BAM!!!",
         spd = 0.2,
         fontSize = 300,
+        cb = hitsound,
+        
     },
     {
         x = 250,
@@ -58,6 +62,7 @@ local series = {
         text = "kapow!!!",
         spd = 0.2,
         fontSize = 300,
+        cb = hitsound,
     },
     {
         x = 0,
@@ -75,6 +80,7 @@ local series = {
         text = "SCIENCE!",
         spd = 0.2,
         fontSize = 280,
+        cb = hitsound,
     },
     {
         x = 0,
@@ -152,7 +158,8 @@ local series = {
         limit = gameWidth,
         text = "Good luck anyways, P-man!!",
         spd = 0.2,
-        img = 5
+        img = 5,
+        cb = hitsound,
     }
 
     
@@ -161,11 +168,15 @@ local series = {
 
 function nextTimer()
     local c = series[index]
-    return mk.texttimer(c.text, c.spd, 
-    function()
-        -- play sound
-        screen:setShake(5) 
-    end)
+    if(c.cb) then
+    return mk.texttimer(c.text, c.spd, c.cb)
+    else
+        return mk.texttimer(c.text, c.spd, 
+        function()
+            -- play sound
+            screen:setShake(5) 
+        end)
+    end
 end
 
 function intro:enter()
