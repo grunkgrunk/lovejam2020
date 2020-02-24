@@ -29,9 +29,9 @@ function love.load()
   love.graphics.setDefaultFilter("nearest", "nearest")
   
   local windowWidth, windowHeight = love.window.getDesktopDimensions()
-  windowWidth, windowHeight = windowWidth * .7, windowHeight * .7 --make the window a bit smaller than the screen itself
+  --windowWidth, windowHeight = windowWidth * .7, windowHeight * .7 --make the window a bit smaller than the screen itself
 
-  push:setupScreen(gameWidth, gameHeight, windowWidth, windowHeight, {fullscreen = false})
+  push:setupScreen(gameWidth, gameHeight, windowWidth, windowHeight, {fullscreen = true})
   screen:setDimensions(push:getDimensions())
   Gamestate.switch(intro)
 end
@@ -43,7 +43,7 @@ function love.draw()
   else
     push:start()
     if Gamestate.current() == game then
-      love.graphics.draw(assets.art.mountain, 0,0, 0, 1,1)
+      love.graphics.draw(assets.art.backgroundtest, 0,0, 0, 1,1)
     end
     screen:apply()
     Gamestate.draw()

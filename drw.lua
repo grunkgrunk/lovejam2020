@@ -47,8 +47,8 @@ function drw.text(txt, x, y, lim, align,rot, alpha,c1,c2)
     end
     
     local lim = lim or 1000
-    local c1 = c1 or colors.names.white-- {251 / 255, 242 / 255, 54 / 255}
-    local c2 = c2 or colors.names.red -- {1, 0, 0}
+    local c1 = c1 or colors.names.white
+    local c2 = c2 or colors.names.red
     love.graphics.setColor(c1[1], c1[2], c1[3], alpha or 1)
     love.graphics.printf(txt, x, y, lim, align,rot)
     love.graphics.setColor(c2[1],c2[2], c2[3], alpha or 1)
