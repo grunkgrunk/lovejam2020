@@ -216,6 +216,7 @@ local function nexttalk()
     c.spd,
     function()
       screen:setShake(c.shake)
+      assets.sfx.talksnd:play()
       if c.callback then
         c.callback()
       end
@@ -279,10 +280,11 @@ function game:update(dt)
           function()
             textobj =
               mk.texttimer(
-              "Good job, f-man!",
+              "Good job, f-man! You saved the world!",
               0.5,
               function()
-                screen:setShake(10)
+                  assets.sfx.endgame:play()
+                  screen:setShake(10)
               end
             )
           end
