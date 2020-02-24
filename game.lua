@@ -29,7 +29,7 @@ local bosstext = {
     shake = 5
   },
   {
-    text = "I was the one who turned you into a penguin!",
+    text = "I was the one who turned you into a frog!!",
     spd = 0.1,
     shake = 10
   },
@@ -47,10 +47,16 @@ local bosstext = {
     shake = 5
   },
   {
-    text = "but be prepared to dodge my death-ray!",
+    text = "but be prepared to get fried!",
     spd = 0.1,
-    shake = 30
-  }
+    shake = 40
+  },
+  {
+    text = "lets' see what frog tastes like!!!!",
+    spd = 0.1,
+    shake = 100
+  },
+
 }
 
 local tutor = {
@@ -61,7 +67,8 @@ local tutor = {
 
 local talkid = 1
 local textobj = nil
-local bossradius = 200
+local bossradius = 100
+local gameover = false
 
 local function playermove(world, player)
   local leg = player.leg
@@ -200,15 +207,19 @@ function game:draw()
     love.graphics.pop()
   end
 
- 
-
   -- draw the fader
   love.graphics.setColor(fader.r, fader.g, fader.b, fader.a)
-  love.graphics.rectangle("fill", 0, 0, gameWidth, gameHeight)
+  love.graphics.rectangle("fill", -100, -100, gameWidth + 100, gameHeight + 100)
   if bossfight and textobj then
-    setFontSize(64)
+    setFontSize(55)
     love.graphics.setColor(0, 0, 0, 1)
-    drw.text(textobj.currenttxt, 0, gameHeight / 2, gameWidth, "center")
+    local c1 = colors.names.white
+    local c2 = colors.names.yellow
+    
+    if gameover then 
+      c1,c2 = colors.names.white, colors.names.red
+    end
+    drw.text(textobj.currenttxt, 0, gameHeight / 2 - 200, gameWidth, "center",0,1, colors.names.white, colors.names.yellow)
   end
 end
 
@@ -222,6 +233,8 @@ local function nexttalk()
     c.spd,
     function()
       screen:setShake(c.shake)
+      assets.sfx.talksnd:setVolume(2)
+      assets.sfx.talksnd:setPitch(lume.random(0.7, 1.5))
       assets.sfx.talksnd:play()
       if c.callback then
         c.callback()
@@ -272,6 +285,8 @@ function game:update(dt)
 
   if player.leg:enter("Chicken") then
     assets.sfx.bowl:play()
+    gameover = true
+
     local d = player.leg:getEnterCollisionData("Chicken").collider
     local x, y = player.leg:getPosition()
     local a, b = d:getPosition()
@@ -290,7 +305,6 @@ function game:update(dt)
               0.5,
               function()
                   assets.sfx.endgame:play()
-                  screen:setShake(10)
               end
             )
           end
