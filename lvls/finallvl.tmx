@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.2" tiledversion="1.3.2" orientation="orthogonal" renderorder="right-down" compressionlevel="0" width="100" height="100" tilewidth="80" tileheight="80" infinite="0" nextlayerid="6" nextobjectid="11">
+<map version="1.2" tiledversion="1.3.2" orientation="orthogonal" renderorder="right-down" compressionlevel="0" width="100" height="100" tilewidth="80" tileheight="80" infinite="0" nextlayerid="7" nextobjectid="12">
  <editorsettings>
   <export target="finallvl.lua" format="lua"/>
  </editorsettings>
@@ -215,7 +215,12 @@
 </data>
  </layer>
  <objectgroup id="2" name="Player">
-  <object id="1" x="503.181" y="5699.5">
+  <object id="1" x="1003.18" y="5824.83">
+   <point/>
+  </object>
+ </objectgroup>
+ <objectgroup id="6" name="Talk">
+  <object id="11" x="510.667" y="5558.67">
    <point/>
   </object>
  </objectgroup>

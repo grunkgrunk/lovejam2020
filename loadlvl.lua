@@ -24,6 +24,8 @@ local function load(lvl)
       mk.rect(world, x, y, tileW, tileH):setType("static")
     end
 
+    local talk = map:getLayer("Talk").objects[1]
+
 
     for i,gid,gx,gy,x,y in map:getLayer("SmallSolid"):getTiles() do
       mk.circle(world, x + 20, y + 20, 15):setType("static")
@@ -59,6 +61,7 @@ local function load(lvl)
       lvl = lvl,
       boulder = boulder,
       chicks = chicks,
+      talk = talk,
       texttimer = mk.texttimer("Hey you how is it?", 0.2)
     }
   end

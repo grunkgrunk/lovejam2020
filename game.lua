@@ -13,6 +13,8 @@ local loadlvl = require("loadlvl")
 
 local game = {}
 
+local bossfight = false
+
 
 local function mouthpos(player)
   local x, y = leg:getPosition()
@@ -98,6 +100,7 @@ function game:draw()
     function(l, t, w, h)
       love.graphics.clear(50 / 255, 60 / 255, 57 / 255)
 
+
       if debug then
         world:draw()
       end
@@ -122,7 +125,9 @@ function game:draw()
 
       setFontSize(32)
       lume.each(state.player.exclaims,function (e) drw.exclaim(e.txt,e.x,e.y,e.r, e.alpha, e.c1, e.c2) end)
-
+      if bossfight and textobj then
+        drw.text(textobj.currenttxt,state.talk.x,state.talk.y)
+      end
     end
   )
 
@@ -131,13 +136,45 @@ function game:draw()
   end
 end
 
+local bosstext = {
+  {
+    text = "HAhahaha i am chicken you are dead! ",
+    spd = 0.22,
+},
+{
+  text = "Come closer but be prepared to dodge my death-ray!",
+  spd = 1,
+},
+}
+local talkid = 1
+local textobj = nil
+
+local function nexttalk()
+ return mk.texttimer(bosstext[talkid].text,bosstext[talkid].spd)
+end
+
+
 function game:update(dt)
+  local world, player, cam = state.world, state.player, state.cam
+  local x,y = player.leg:getPosition()
+  local dist = vector(x,y)-vector(state.talk.x,state.talk.y)
+  print(dist:len())
+  if(dist:len()<200) and not bossfight then
+    bossfight = true
+    player.leg:setType("static")
+    textobj = nexttalk()
+    
+    love.audio.stop()
+  end
+  if(textobj) then
+    textobj.timer:update(dt)
+  end
+
   flux.update(dt)
   if state.texttimer then
     state.texttimer.timer:update(dt)
   end
   
-  local world, player, cam = state.world, state.player, state.cam
   lume.each(player.exclaims, function(e) e.flux:update(dt) end)
   p(player.exclaims)
   world:update(dt)
@@ -160,6 +197,10 @@ function game:update(dt)
 end
 
 function game:keypressed(key)
+  if(bossfight) and textobj.done then
+    talkid = talkid + 1
+    textobj = nexttalk()
+  end
   if key == "up" then
     local player = state.player
     local x, y = player.leg:getPosition()

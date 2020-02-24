@@ -21,7 +21,7 @@ local series = {
         x = 450,
         y = 100,
         limit = 700,
-        text = "The best looking super hero in the world!",
+        text = "The best looking superhero in the world!",
         spd = 0.2,
         img = 1
     },
