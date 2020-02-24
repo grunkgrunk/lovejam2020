@@ -33,7 +33,7 @@ function love.load()
 
   push:setupScreen(gameWidth, gameHeight, windowWidth, windowHeight, {fullscreen = true})
   screen:setDimensions(push:getDimensions())
-  Gamestate.switch(intro)
+  Gamestate.switch(splash)
 end
 
 function love.draw()
@@ -66,7 +66,7 @@ function love.keypressed(key)
     love.event.quit()
   end
 
-  if key == "d" then
+  if false and key == "d" then
     debug = not debug
   end
 
