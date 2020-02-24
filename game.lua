@@ -52,6 +52,13 @@ local bosstext = {
     shake = 30
   }
 }
+
+local tutor = {
+  roll = "'left' and 'right' to roll",
+  jump = "'up' to jump!",
+  tongue = "'space' to tongue!"
+}
+
 local talkid = 1
 local textobj = nil
 local bossradius = 200
@@ -104,15 +111,20 @@ local function playermove(world, player)
       hy + nv.y * l,
       function(fixt, x, y, xn, yn, frac)
         if not player.holdjoint then
+          player.tonguefollow = false
           local j = world:addJoint("RopeJoint", leg, fixt:getBody(), hx, hy, x, y, l, true)
           assets.sfx.tongue:setVolume(10)
           assets.sfx.tongue:play()
 
-          mk.headexclaim(player, {"Slurp!", "Omnomom!", "Slerp!", "Wham!", "Tongue!" })
+          mk.headexclaim(player, {"Slurp!", "Omnomom!", "Slerp!", "Wham!", "Tongue!"})
           player.holdjoint = j
           player.tx = hx
           player.ty = hy
-          flux.to(player, 0.5, {tx = x, ty = y}):ease("elasticout")
+          flux.to(player, 0.5, {tx = x, ty = y}):ease("elasticout"):oncomplete(
+            function()
+              player.tonguefollow = true
+            end
+          )
         end
         return 1
       end
@@ -129,12 +141,19 @@ function game:draw()
   if not fader.complete then
     cam:draw(
       function(l, t, w, h)
-        love.graphics.clear(50 / 255, 60 / 255, 57 / 255)
-
         if debug then
           world:draw()
         end
         map:draw()
+
+        lume.each(
+          state.tutorial,
+          function(e)
+            local txt = tutor[e.properties.hint]
+            drw.text(txt, e.x, e.y, 1000, nil, 0, 1, {0, 0, 0}, colors.names.red)
+          end
+        )
+
         drw.player(state.player)
         drw.boulder(state.boulder)
         lume.each(state.chicks, drw.chick)
@@ -149,6 +168,10 @@ function game:draw()
           local x1, y1, x2, y2 = state.player.holdjoint:getAnchors()
           love.graphics.setColor(colors.names.red)
           love.graphics.setLineWidth(4)
+          if state.player.tonguefollow then
+            state.player.tx = x2
+            state.player.ty = y2
+          end
           love.graphics.circle("fill", x1, y1, 2)
           love.graphics.circle("fill", state.player.tx, state.player.ty, 2)
 
@@ -164,6 +187,7 @@ function game:draw()
             drw.exclaim(e.txt, e.x, e.y, e.r, e.alpha, e.c1, e.c2)
           end
         )
+
         local x, y = state.talk.x, state.talk.y
         if debug then
           love.graphics.setColor(0, 0, 0, 1)
@@ -226,8 +250,8 @@ function game:update(dt)
     end
   )
 
-  -- remove dead exclaims 
-  for i =#player.exclaims, 1, -1 do
+  -- remove dead exclaims
+  for i = #player.exclaims, 1, -1 do
     if player.exclaims[i].dead then
       table.remove(player.exclaims, i)
     end
@@ -235,7 +259,7 @@ function game:update(dt)
 
   world:update(dt)
   timer.update(dt)
-  
+
   playermove(world, player)
   player.timer:update(dt)
 
@@ -269,7 +293,9 @@ function game:update(dt)
 end
 
 function game:keypressed(key)
-  if fader.complete then return end
+  if fader.complete then
+    return
+  end
   if (bossfight) and textobj and textobj.done then
     talkid = talkid + 1
     textobj = nexttalk()
@@ -313,12 +339,14 @@ function game:keypressed(key)
     end
     if found or debug then
       player.leg:setLinearVelocity(0, 0)
-      flux.to(player, 0.15, {sx = 0.9, sy = 1.3}):oncomplete(function()
-        player.jumping = false
-      end):after(0.2, {sx = 1, sy = 1})
+      flux.to(player, 0.15, {sx = 0.9, sy = 1.3}):oncomplete(
+        function()
+          player.jumping = false
+        end
+      ):after(0.2, {sx = 1, sy = 1})
       assets.sfx.jump:setVolume(0.4)
       assets.sfx.jump:play()
-      mk.headexclaim(player, {"Jump!", "C ya!", "Woosh!", "Pow!", "Fly!", "Huergh!" })
+      mk.headexclaim(player, {"Jump!", "C ya!", "Woosh!", "Pow!", "Fly!", "Huergh!"})
       player.jumping = true
       player.canauch = false
       local d = vector.fromPolar(player.leg:getAngle() - math.pi / 2)

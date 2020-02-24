@@ -37,10 +37,14 @@ function love.load()
 end
 
 function love.draw()
+  
   if Gamestate.current() == splash then
     Gamestate.draw()
   else
     push:start()
+    if Gamestate.current() == game then
+      love.graphics.draw(assets.art.mountain, 0,0, 0, 1,1)
+    end
     screen:apply()
     Gamestate.draw()
     push:finish()
