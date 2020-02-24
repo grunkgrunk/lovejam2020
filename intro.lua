@@ -94,7 +94,7 @@ local series = {
         limit = gameWidth,
         text = "Get ready to teleport!",
         spd = 0.2,
-        cb = function()screen:setShake(10*2) end
+        cb = function()screen:setShake(10*2) assets.sfx.talksnd:play()  end
     },
     {
         x = 0,
@@ -104,7 +104,7 @@ local series = {
         text = "3...",
         spd = 0.2,
         fontSize = 100,
-        cb = function()screen:setShake(15*2) end
+        cb = function()screen:setShake(15*2)  assets.sfx.talksnd:play() end
     },
     {
         x = 0,
@@ -114,7 +114,7 @@ local series = {
         text = "2...",
         spd = 0.2,
         fontSize = 200,
-        cb = function()screen:setShake(20*2) end
+        cb = function()screen:setShake(20*2) assets.sfx.talksnd:play()  end
     },
     {
         x = 0,
@@ -124,7 +124,7 @@ local series = {
         text = "1...",
         spd = 0.2,
         fontSize = 300,
-        cb = function()screen:setShake(30*2) end
+        cb = function()screen:setShake(30*2)  assets.sfx.talksnd:play() end
     },
     {
         x = 0,
@@ -133,8 +133,8 @@ local series = {
         limit = gameWidth,
         text = "0...",
         spd = 0.2,
-        fontSize = 450,
-        cb = function()screen:setShake(50*2) end
+        fontSize = 400,
+        cb = function()screen:setShake(50*2)  assets.sfx.talksnd:play() end
     },
     {
         x = 0,
@@ -144,7 +144,7 @@ local series = {
         text = "-1...?",
         spd = 0.2,
         fontSize = 64,
-        cb = function()screen:setShake(10) end
+        cb = function()screen:setShake(10)  assets.sfx.talksnd:play() end
     },
     {
         x = 400,
