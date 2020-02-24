@@ -16,7 +16,7 @@ local game = require("game")
 local intro = require("intro")
 local splash = require("splash")
 
-debug = false
+debug = true
 state = {}
 raydebug = {}
 
@@ -33,7 +33,7 @@ function love.load()
 
   push:setupScreen(gameWidth, gameHeight, windowWidth, windowHeight, {fullscreen = true})
   screen:setDimensions(push:getDimensions())
-  Gamestate.switch(splash)
+  Gamestate.switch(intro)
 end
 
 function love.draw()
@@ -66,7 +66,7 @@ function love.keypressed(key)
     love.event.quit()
   end
 
-  if false and key == "d" then
+  if key == "d" then
     debug = not debug
   end
 

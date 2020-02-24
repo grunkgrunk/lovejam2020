@@ -17,6 +17,8 @@ local game = {}
 local fader = {r = 0, g = 0, b = 0, a = 0}
 
 local bossfight = false
+local bosstalk = false
+
 local bosstext = {
   {
     text = "hahahaha! well done f-man!",
@@ -67,7 +69,7 @@ local tutor = {
 
 local talkid = 1
 local textobj = nil
-local bossradius = 100
+local bossradius = 250
 local gameover = false
 
 local function playermove(world, player)
@@ -99,7 +101,7 @@ local function playermove(world, player)
   end
 
   player.holding = false
-  if love.keyboard.isDown("space") then
+  if love.keyboard.isDown("space") and not bosstalk then
     player.holding = true
     local x, y = leg:getPosition()
     local w = player.width / 2
@@ -249,6 +251,7 @@ function game:update(dt)
   cam:setPosition(x, y - 50)
   local dist = vector(x, y) - vector(state.talk.x, state.talk.y)
   if (dist:len() < bossradius) and not bossfight then
+    bosstalk = true
     bossfight = true
     player.leg:setType("static")
     textobj = nexttalk()
@@ -284,6 +287,7 @@ function game:update(dt)
   player.timer:update(dt)
 
   if player.leg:enter("Chicken") then
+    assets.sfx.bowl:setVolume(0.3)    
     assets.sfx.bowl:play()
     gameover = true
 
@@ -323,9 +327,11 @@ function game:keypressed(key)
     textobj = nexttalk()
     if not textobj then
       state.player.leg:setType("dynamic")
+      bosstalk = false
     end
   end
-  if key == "up" then
+
+  if key == "up" and not bosstalk then
     local player = state.player
     local x, y = player.leg:getPosition()
     -- player.col:applyLinearImpulse(v.x, v.y)
@@ -380,10 +386,11 @@ end
 
 function game:enter()
   screen:setShake(20)
+  assets.sfx.teleport:setVolume(0.2)
   assets.sfx.teleport:play()
   assets.sfx.teleportintro:play()
   local m = assets.sfx.background4game
-  m:setVolume(0.5)
+  m:setVolume(0.1)
   timer.after(3,function () 
     m:play() 
     m:setLooping(true)

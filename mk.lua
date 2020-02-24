@@ -103,7 +103,7 @@ function mk.player(world, x, y)
     canauch = true,
     jumping = false,
     timer = t,
-    exclaims = exclaims
+    exclaims = exclaims,
   }
 
   -- position players' feet at where the arrow points
@@ -130,7 +130,7 @@ function mk.player(world, x, y)
             end
           )
           assets.sfx["av" .. lume.randomchoice({1, 2, 3})]:play()
-          screen:setShake(10)
+          screen:setShake(30)
         elseif (v > 250) then
           o.canauch = false
           o.smallauch = true
