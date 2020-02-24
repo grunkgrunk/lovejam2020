@@ -297,7 +297,7 @@ function game:keypressed(key)
         end
       )
     end
-    if found then
+    if found or debug then
       player.leg:setLinearVelocity(0, 0)
       flux.to(player, 0.1, {sx = 0.9, sy = 1.3}):after(0.2, {sx = 1, sy = 1})
       assets.sfx.jump:setVolume(0.4)
