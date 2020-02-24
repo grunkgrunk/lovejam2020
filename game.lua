@@ -329,7 +329,7 @@ end
 
 function game:enter()
   screen:setShake(20)
-  local m = assets.sfx.firstmusic
+  local m = assets.sfx.background
   m:play()
   m:setLooping(true)
   state = loadlvl("finallvl")
