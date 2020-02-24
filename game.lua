@@ -160,6 +160,7 @@ function game:draw()
         lume.each(
           state.player.exclaims,
           function(e)
+            --love.graphics.draw(assets.art.speechbubble,e.x-50,e.y-50,e.r,0.08,0.08)
             drw.exclaim(e.txt, e.x, e.y, e.r, e.alpha, e.c1, e.c2)
           end
         )

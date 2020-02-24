@@ -76,6 +76,7 @@ end
 
 function mk.headexclaim(player, words)
   local x, y = player.leg:getPosition()
+  
   player.exclaims[#player.exclaims + 1] = mk.exclaim(lume.randomchoice(words), x, y - 80 + lume.random(-10, 10), lume.random(-0.5, 0.5))
 end
 
