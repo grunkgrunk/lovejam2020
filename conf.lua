@@ -1,4 +1,17 @@
 function love.conf(t)
+    t.releases = {
+        title = "The Fantastic F-Man",              -- The project title (string)
+        package = nil,            -- The project command and package name (string)
+        loveVersion = "11.3",        -- The project LÖVE version
+        version = nil,            -- The project version
+        author = "Schrunkin",             -- Your name (string)
+        email = nil,              -- Your email (string)
+        description = nil,        -- The project description (string)
+        homepage = nil,           -- The project homepage (string)
+        identifier = nil,         -- The project Uniform Type Identifier (string)
+        excludeFileList = {"*.tmx", "*.kra"},     -- File patterns to exclude. (string list)
+        releaseDirectory = "./release",   -- Where to store the project releases (string)
+      }
     t.identity = nil                    -- The name of the save directory (string)
     t.appendidentity = false            -- Search files in source directory before save directory (boolean)
     t.console = true                    -- Attach a console (boolean, Windows only)
