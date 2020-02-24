@@ -331,8 +331,9 @@ end
 function game:enter()
   screen:setShake(20)
   assets.sfx.teleport:play()
+  assets.sfx.teleportintro:play()
   local m = assets.sfx.background
-  timer.after(2.1,function () 
+  timer.after(3,function () 
     m:play() 
     m:setLooping(true)
    end )

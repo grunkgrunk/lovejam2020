@@ -80,7 +80,7 @@ local series = {
         text = "SCIENCE!",
         spd = 0.2,
         fontSize = 280,
-        cb = hitsound,
+        cb = function () assets.sfx.science:play() end,
     },
     {
         x = 0,
@@ -89,6 +89,7 @@ local series = {
         limit = gameWidth,
         text = "Get ready to teleport!",
         spd = 0.2,
+        cb = function()screen:setShake(10*2) end
     },
     {
         x = 0,
@@ -97,7 +98,8 @@ local series = {
         limit = gameWidth,
         text = "3...",
         spd = 0.2,
-        fontSize = 100
+        fontSize = 100,
+        cb = function()screen:setShake(15*2) end
     },
     {
         x = 0,
@@ -106,7 +108,8 @@ local series = {
         limit = gameWidth,
         text = "2...",
         spd = 0.2,
-        fontSize = 200
+        fontSize = 200,
+        cb = function()screen:setShake(20*2) end
     },
     {
         x = 0,
@@ -115,7 +118,8 @@ local series = {
         limit = gameWidth,
         text = "1...",
         spd = 0.2,
-        fontSize = 300
+        fontSize = 300,
+        cb = function()screen:setShake(30*2) end
     },
     {
         x = 0,
@@ -124,7 +128,8 @@ local series = {
         limit = gameWidth,
         text = "0...",
         spd = 0.2,
-        fontSize = 450
+        fontSize = 450,
+        cb = function()screen:setShake(50*2) end
     },
     {
         x = 0,
@@ -133,7 +138,8 @@ local series = {
         limit = gameWidth,
         text = "-1...?",
         spd = 0.2,
-        fontSize = 64
+        fontSize = 64,
+        cb = function()screen:setShake(10) end
     },
     {
         x = 400,
