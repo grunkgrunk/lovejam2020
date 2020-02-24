@@ -215,12 +215,12 @@
 </data>
  </layer>
  <objectgroup id="2" name="Player">
-  <object id="1" x="1003.18" y="5824.83">
+  <object id="1" x="824.392" y="5670.28">
    <point/>
   </object>
  </objectgroup>
  <objectgroup id="6" name="Talk">
-  <object id="11" x="510.667" y="5558.67">
+  <object id="11" x="276.728" y="5581">
    <point/>
   </object>
  </objectgroup>

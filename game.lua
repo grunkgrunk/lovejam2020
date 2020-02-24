@@ -13,20 +13,47 @@ local loadlvl = require("loadlvl")
 
 local game = {}
 
+local fader = {r = 0, g = 0, b = 0, a = 0}
+
 local bossfight = false
-
-
-local function mouthpos(player)
-  local x, y = leg:getPosition()
-  local w = player.width / 2
-  local h = player.height / 2
-
-  local r = leg:getAngle()
-  local v = vector.fromPolar(r - math.pi / 2, h)
-
-  local hx, hy = x + v.x, y + v.y
-  return vector(hx,hy)
-end
+local bosstext = {
+  {
+    text = "hahahaha! well done p-man!",
+    spd = 0.1,
+    shake = 5
+  },
+  {
+    text = "i am chick, your arch nemesis!!!",
+    spd = 0.1,
+    shake = 5
+  },
+  {
+    text = "I was the one who turned you into a penguin!",
+    spd = 0.1,
+    shake = 10
+  },
+  {
+    text = "Cock-a-doodle-dooooooo, b*tch!!",
+    spd = 0.5,
+    shake = 100,
+    callback = function()
+      assets.sfx.chicken:play()
+    end
+  },
+  {
+    text = "Come closer...",
+    spd = 0.1,
+    shake = 5
+  },
+  {
+    text = "but be prepared to dodge my death-ray!",
+    spd = 0.1,
+    shake = 30
+  }
+}
+local talkid = 1
+local textobj = nil
+local bossradius = 200
 
 local function playermove(world, player)
   local leg = player.leg
@@ -96,87 +123,101 @@ end
 function game:draw()
   local cam, world, map = state.cam, state.world, state.map
   cam:setScale(2)
-  cam:draw(
-    function(l, t, w, h)
-      love.graphics.clear(50 / 255, 60 / 255, 57 / 255)
+  if not fader.complete then
+    cam:draw(
+      function(l, t, w, h)
+        love.graphics.clear(50 / 255, 60 / 255, 57 / 255)
 
+        if debug then
+          world:draw()
+        end
+        map:draw()
+        drw.player(state.player)
+        drw.boulder(state.boulder)
+        lume.each(state.chicks, drw.chick)
 
-      if debug then
-        world:draw()
-      end
-      map:draw()
-      drw.player(state.player)
-      drw.boulder(state.boulder)
-      lume.each(state.chicks, drw.chick)
+        if debug then
+          for i, v in ipairs(raydebug) do
+            love.graphics.line(v.from.x, v.from.y, v.to.x, v.to.y)
+          end
+        end
 
-      if debug then
-        for i, v in ipairs(raydebug) do
-          love.graphics.line(v.from.x, v.from.y, v.to.x, v.to.y)
+        if state.player.holdjoint then
+          local x1, y1, x2, y2 = state.player.holdjoint:getAnchors()
+          love.graphics.setLineWidth(5)
+          love.graphics.setLineStyle("smooth")
+          love.graphics.setColor(172 / 255, 50 / 255, 50 / 255)
+          love.graphics.line(x1, y1, state.player.tx, state.player.ty)
+        end
+
+        setFontSize(32)
+        lume.each(
+          state.player.exclaims,
+          function(e)
+            drw.exclaim(e.txt, e.x, e.y, e.r, e.alpha, e.c1, e.c2)
+          end
+        )
+        local x, y = state.talk.x, state.talk.y
+        if debug then
+          love.graphics.setColor(0, 0, 0, 1)
+          love.graphics.circle("line", x, y, bossradius)
         end
       end
+    )
+  end
+  -- draw the fader
+  love.graphics.setColor(fader.r, fader.g, fader.b, fader.a)
+  love.graphics.rectangle("fill", 0, 0, gameWidth, gameHeight)
+  if bossfight and textobj then
+    setFontSize(64)
+    love.graphics.setColor(0, 0, 0, 1)
+    drw.text(textobj.currenttxt, 0, gameHeight / 2, gameWidth, "center")
+  end
+end
 
-      if state.player.holdjoint then
-        local x1,y1, x2,y2 = state.player.holdjoint:getAnchors()
-        love.graphics.setLineWidth(5)
-        love.graphics.setLineStyle("smooth")
-        love.graphics.setColor(172 / 255, 50 / 255, 50 / 255)
-        love.graphics.line(x1, y1, state.player.tx, state.player.ty)
-      end
-
-      setFontSize(32)
-      lume.each(state.player.exclaims,function (e) drw.exclaim(e.txt,e.x,e.y,e.r, e.alpha, e.c1, e.c2) end)
-      if bossfight and textobj then
-        drw.text(textobj.currenttxt,state.talk.x,state.talk.y)
+local function nexttalk()
+  if talkid > #bosstext then
+    return nil
+  end
+  local c = bosstext[talkid]
+  return mk.texttimer(
+    c.text,
+    c.spd,
+    function()
+      screen:setShake(c.shake)
+      if c.callback then
+        c.callback()
       end
     end
   )
-
-  if state.texttimer then
-  -- drw.text(state.texttimer.currenttxt)
-  end
 end
-
-local bosstext = {
-  {
-    text = "HAhahaha i am chicken you are dead! ",
-    spd = 0.22,
-},
-{
-  text = "Come closer but be prepared to dodge my death-ray!",
-  spd = 1,
-},
-}
-local talkid = 1
-local textobj = nil
-
-local function nexttalk()
- return mk.texttimer(bosstext[talkid].text,bosstext[talkid].spd)
-end
-
 
 function game:update(dt)
   local world, player, cam = state.world, state.player, state.cam
-  local x,y = player.leg:getPosition()
-  local dist = vector(x,y)-vector(state.talk.x,state.talk.y)
-  print(dist:len())
-  if(dist:len()<200) and not bossfight then
+  local x, y = player.leg:getPosition()
+  local dist = vector(x, y) - vector(state.talk.x, state.talk.y)
+  if (dist:len() < bossradius) and not bossfight then
     bossfight = true
     player.leg:setType("static")
     textobj = nexttalk()
-    
     love.audio.stop()
   end
-  if(textobj) then
+  if (textobj) then
     textobj.timer:update(dt)
+    print(textobj.currenttxt)
   end
 
   flux.update(dt)
   if state.texttimer then
     state.texttimer.timer:update(dt)
   end
-  
-  lume.each(player.exclaims, function(e) e.flux:update(dt) end)
-  p(player.exclaims)
+
+  lume.each(
+    player.exclaims,
+    function(e)
+      e.flux:update(dt)
+    end
+  )
   world:update(dt)
   timer.update(dt)
   local x, y = player.leg:getPosition()
@@ -184,22 +225,43 @@ function game:update(dt)
   playermove(world, player)
   player.timer:update(dt)
 
-
   if player.leg:enter("Chicken") then
     assets.sfx.bowl:play()
     local d = player.leg:getEnterCollisionData("Chicken").collider
-    local x,y = player.leg:getPosition() 
-    local a,b = d:getPosition() 
-    local dir = (vector(a,b) - vector(x,y)):normalized() * 10000
+    local x, y = player.leg:getPosition()
+    local a, b = d:getPosition()
+    local dir = (vector(a, b) - vector(x, y)):normalized() * 10000
 
     d:applyLinearImpulse(dir.x, dir.y)
+    flux.to(fader, 0.4, {a = 1}):delay(1):oncomplete(
+      function()
+        fader.complete = true
+        timer.after(
+          1,
+          function()
+            textobj =
+              mk.texttimer(
+              "Good job, P-man!",
+              0.5,
+              function()
+                screen:setShake(10)
+              end
+            )
+          end
+        )
+      end
+    )
   end
 end
 
 function game:keypressed(key)
-  if(bossfight) and textobj.done then
+  if fader.complete then return end
+  if (bossfight) and textobj and textobj.done then
     talkid = talkid + 1
     textobj = nexttalk()
+    if not textobj then
+      state.player.leg:setType("dynamic")
+    end
   end
   if key == "up" then
     local player = state.player
@@ -217,10 +279,10 @@ function game:keypressed(key)
 
     for i = r, math.pi + r, 0.2 do
       local nv = vector.fromPolar(i, 1)
-      local dirnorm = dir:normalized() 
-      local sc =(dirnorm.x*nv.x+dirnorm.y*nv.y)*l*2+0.1
-      local castto = bottom + nv*sc
-      raydebug[#raydebug + 1] = {from = bottom, to = bottom + nv*sc}
+      local dirnorm = dir:normalized()
+      local sc = (dirnorm.x * nv.x + dirnorm.y * nv.y) * l * 2 + 0.1
+      local castto = bottom + nv * sc
+      raydebug[#raydebug + 1] = {from = bottom, to = bottom + nv * sc}
       state.world:rayCast(
         bottom.x,
         bottom.y,
@@ -236,7 +298,7 @@ function game:keypressed(key)
       )
     end
     if found then
-      player.leg:setLinearVelocity(0,0)
+      player.leg:setLinearVelocity(0, 0)
       flux.to(player, 0.1, {sx = 0.9, sy = 1.3}):after(0.2, {sx = 1, sy = 1})
       assets.sfx.jump:setVolume(0.4)
       assets.sfx.jump:play()
@@ -258,10 +320,11 @@ function game:enter()
   p.sx = 0
   p.sy = 0
   p.leg:setType("static")
-  flux.to(p, 1, {sx = 1, sy = 1}):ease("elasticout"):delay(0.5):oncomplete(function()
-    p.leg:setType("dynamic")
-  end)
-
+  flux.to(p, 1, {sx = 1, sy = 1}):ease("elasticout"):delay(0.5):oncomplete(
+    function()
+      p.leg:setType("dynamic")
+    end
+  )
 end
 
 return game
