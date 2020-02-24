@@ -228,7 +228,7 @@ function intro:keypressed(key)
         Gamestate.switch(game)
     end
     if not texttimer then return end
-    if true or texttimer.done then
+    if texttimer.done then
         index = index + 1
         if index > #series then 
             introdone = true
