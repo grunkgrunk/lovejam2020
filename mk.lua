@@ -24,7 +24,7 @@ function mk.circle(world, x, y, r)
   return c
 end
 
-function mk.texttimer(txt, spd, every)
+function mk.texttimer(txt, spd,every)
   every = every or function()
     end
   local finaltxt = lume.split(txt)
