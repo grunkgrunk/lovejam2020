@@ -6,8 +6,9 @@ local colors = require("colors")
 function mk.boulder(world, x, y)
   local c = mk.circle(world, x, y, 40)
   c:setCollisionClass("Solid")
-  c:setAngularDamping(1)
-  c:setMass(4)
+  c:setAngularDamping(4)
+  c:setMass(3)
+  c:setFriction(2)
   return c
 end
 
@@ -129,7 +130,7 @@ function mk.player(world, x, y)
             end
           )
           assets.sfx["av" .. lume.randomchoice({1, 2, 3})]:play()
-          screen:setShake(5)
+          screen:setShake(10)
         elseif (v > 250) then
           o.canauch = false
           o.smallauch = true
@@ -142,7 +143,6 @@ function mk.player(world, x, y)
           assets.sfx.smack:play()
           assets.sfx.wetbelly:setVolume(0.2)
           assets.sfx.wetbelly:play()
-          screen:setShake(2)
         end
       end
     end

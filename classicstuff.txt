@@ -4,5 +4,14 @@ audacity crasher efter man har optaget noget meget vigtigt
 
 man har lavet en ændring men man glemte at pushe dem
 
-man har lavet en ændring, man har husket at pushe, men den anden kan stadig ikke se ændringerne
+man har lavet en ændring, man har husket at pushe, men den anden kan stadig ikke se ændringerne fordi man har glemt at pushe
 
+når terminalen defaulter til en intetsigende commitmsg
+
+når der pludselig er en collision et tilfældigt på banen
+
+Når man vil teste noget og man gør det på den absolut mest ineffektive måde for at undgå at skrive en linje kode som man skal slette igen
+
+når man forsøger at overstrege et punkt på sin todoliste med en wacom pen
+
+når spillet breaker FORDI man slår debug mode på

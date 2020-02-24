@@ -15,6 +15,8 @@ function drw.chick(feet)
 end
 
 function drw.player(player)
+    love.graphics.push( )
+    love.graphics.setColor(1,1,1)
     local leg = player.leg
     local x, y = leg:getPosition()
     local r = leg:getAngle()
@@ -29,6 +31,7 @@ function drw.player(player)
         s = assets.art.pengu.jump
     end
     love.graphics.draw(s, x, y, r, 0.4 * player.sx, 0.4 * player.sy, 75, 120)
+    love.graphics.pop()
 end
 
 function drw.exclaim(txt, x,y,r, alpha, c1, c2)
