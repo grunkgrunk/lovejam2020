@@ -74,6 +74,11 @@ function mk.exclaim(txt, x, y, r)
   return o
 end
 
+function mk.headexclaim(player, words)
+  local x, y = player.leg:getPosition()
+  player.exclaims[#player.exclaims + 1] = mk.exclaim(lume.randomchoice(words), x, y - 80 + lume.random(-10, 10), lume.random(-0.5, 0.5))
+end
+
 function mk.player(world, x, y)
   local exclaims = {}
   local w, h = 35, 70
@@ -93,6 +98,7 @@ function mk.player(world, x, y)
     auch = false,
     smallauch = false,
     canauch = true,
+    jumping = false,
     timer = t,
     exclaims = exclaims
   }
@@ -112,9 +118,7 @@ function mk.player(world, x, y)
           o.canauch = false
           local x, y = leg:getPosition()
           local excl = {"auch!", "ow!", "ahhh!", "argg!", "av!", "ugh!", "bonk!", "bam!"}
-
-          exclaims[#exclaims + 1] =
-            mk.exclaim(lume.randomchoice(excl), x, y - 80 + lume.random(-10, 10), lume.random(-0.5, 0.5))
+          mk.headexclaim(o, excl)
           o.auch = true
           t:after(
             0.2,
@@ -134,6 +138,8 @@ function mk.player(world, x, y)
             end
           )
           assets.sfx.smack:play()
+          assets.sfx.wetbelly:setVolume(0.2)
+          assets.sfx.wetbelly:play()
           screen:setShake(2)
         end
       end

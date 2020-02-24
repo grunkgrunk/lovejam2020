@@ -9,6 +9,7 @@ local push = require("lib/push")
 local flux = require("lib/flux")
 local mk = require("mk")
 local drw = require("drw")
+local colors = require("colors")
 local loadlvl = require("loadlvl")
 
 local game = {}
@@ -18,7 +19,7 @@ local fader = {r = 0, g = 0, b = 0, a = 0}
 local bossfight = false
 local bosstext = {
   {
-    text = "hahahaha! well done p-man!",
+    text = "hahahaha! well done f-man!",
     spd = 0.1,
     shake = 5
   },
@@ -106,6 +107,8 @@ local function playermove(world, player)
           local j = world:addJoint("RopeJoint", leg, fixt:getBody(), hx, hy, x, y, l, true)
           assets.sfx.tongue:setVolume(10)
           assets.sfx.tongue:play()
+
+          mk.headexclaim(player, {"Slurp!", "Omnomom!", "Slerp!", "Wham!", "Tongue!" })
           player.holdjoint = j
           player.tx = hx
           player.ty = hy
@@ -144,9 +147,12 @@ function game:draw()
 
         if state.player.holdjoint then
           local x1, y1, x2, y2 = state.player.holdjoint:getAnchors()
-          love.graphics.setLineWidth(5)
+          love.graphics.setColor(colors.names.red)
+          love.graphics.setLineWidth(4)
+          love.graphics.circle("fill", x1, y1, 2)
+          love.graphics.circle("fill", state.player.tx, state.player.ty, 2)
+
           love.graphics.setLineStyle("smooth")
-          love.graphics.setColor(172 / 255, 50 / 255, 50 / 255)
           love.graphics.line(x1, y1, state.player.tx, state.player.ty)
         end
 
@@ -218,6 +224,14 @@ function game:update(dt)
       e.flux:update(dt)
     end
   )
+
+  -- remove dead exclaims 
+  for i =#player.exclaims, 1, -1 do
+    if player.exclaims[i].dead then
+      table.remove(player.exclaims, i)
+    end
+  end
+
   world:update(dt)
   timer.update(dt)
   
@@ -240,7 +254,7 @@ function game:update(dt)
           function()
             textobj =
               mk.texttimer(
-              "Good job, P-man!",
+              "Good job, f-man!",
               0.5,
               function()
                 screen:setShake(10)
@@ -298,9 +312,13 @@ function game:keypressed(key)
     end
     if found or debug then
       player.leg:setLinearVelocity(0, 0)
-      flux.to(player, 0.1, {sx = 0.9, sy = 1.3}):after(0.2, {sx = 1, sy = 1})
+      flux.to(player, 0.15, {sx = 0.9, sy = 1.3}):oncomplete(function()
+        player.jumping = false
+      end):after(0.2, {sx = 1, sy = 1})
       assets.sfx.jump:setVolume(0.4)
       assets.sfx.jump:play()
+      mk.headexclaim(player, {"Jump!", "C ya!", "Woosh!", "Pow!", "Fly!", "Huergh!" })
+      player.jumping = true
       player.canauch = false
       local d = vector.fromPolar(player.leg:getAngle() - math.pi / 2)
       local v = d * 2000

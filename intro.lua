@@ -16,7 +16,7 @@ local series = {
         x = 320,
         y = 300,
         limit = 1000,
-        text = "You are P-Man!",
+        text = "You are f-Man!",
         spd = 0.2,
     },
     {
@@ -156,7 +156,7 @@ local series = {
         y = gameHeight / 2,
         align = "center",
         limit = gameWidth,
-        text = "Good luck anyways, P-man!!",
+        text = "Good luck anyways, f-man!!",
         spd = 0.2,
         img = 5,
         cb = hitsound,

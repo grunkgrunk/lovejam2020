@@ -18,12 +18,15 @@ function drw.player(player)
     local leg = player.leg
     local x, y = leg:getPosition()
     local r = leg:getAngle()
-    local s = assets.art.penguclosed 
+    local s = assets.art.pengu.idle
     if player.holding or player.smallauch then
-        s = assets.art.pengu
+        s = assets.art.pengu.smallauch
     end
     if player.auch then
-        s = assets.art.penguauch
+        s = assets.art.pengu.bigauch
+    end
+    if player.jumping then 
+        s = assets.art.pengu.jump
     end
     love.graphics.draw(s, x, y, r, 0.4 * player.sx, 0.4 * player.sy, 75, 120)
 end

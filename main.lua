@@ -20,7 +20,6 @@ debug = false
 state = {}
 raydebug = {}
 
-
 function setFontSize(n)
   local font = assets.font.Shaka_Pow
   love.graphics.setFont(font(n))
@@ -34,7 +33,7 @@ function love.load()
 
   push:setupScreen(gameWidth, gameHeight, windowWidth, windowHeight, {fullscreen = false})
   screen:setDimensions(push:getDimensions())
-  Gamestate.switch(splash)
+  Gamestate.switch(game)
 end
 
 function love.draw()
