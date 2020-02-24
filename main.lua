@@ -30,12 +30,12 @@ function love.load()
   love.graphics.setDefaultFilter("nearest", "nearest")
   
   local windowWidth, windowHeight = love.window.getDesktopDimensions()
-  --windowWidth, windowHeight = windowWidth * .7, windowHeight * .7 --make the window a bit smaller than the screen itself
+  windowWidth, windowHeight = windowWidth * .7, windowHeight * .7 --make the window a bit smaller than the screen itself
 
   push:setupScreen(gameWidth, gameHeight, windowWidth, windowHeight, {fullscreen = false})
   screen:setDimensions(push:getDimensions())
 
-  Gamestate.switch(intro)
+  Gamestate.switch(game)
 end
 
 function love.draw()

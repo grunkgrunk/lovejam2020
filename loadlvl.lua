@@ -51,7 +51,8 @@ local function load(lvl)
     -- local ents = lume.concat({} )
     
     local left, top, right, bottom = solidlayer:getPixelBounds()
-    local cam = gamera.new(left,top,right,bottom)
+    local cam = gamera.new(left ,top, right,bottom)
+    cam:setWindow(0,0,gameWidth, gameHeight)
     
     return {
       cam = cam,

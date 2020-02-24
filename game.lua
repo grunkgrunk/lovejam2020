@@ -195,6 +195,7 @@ end
 function game:update(dt)
   local world, player, cam = state.world, state.player, state.cam
   local x, y = player.leg:getPosition()
+  cam:setPosition(x, y - 50)
   local dist = vector(x, y) - vector(state.talk.x, state.talk.y)
   if (dist:len() < bossradius) and not bossfight then
     bossfight = true
@@ -220,8 +221,7 @@ function game:update(dt)
   )
   world:update(dt)
   timer.update(dt)
-  local x, y = player.leg:getPosition()
-  cam:setPosition(x, y - 60)
+  
   playermove(world, player)
   player.timer:update(dt)
 
@@ -233,7 +233,7 @@ function game:update(dt)
     local dir = (vector(a, b) - vector(x, y)):normalized() * 10000
 
     d:applyLinearImpulse(dir.x, dir.y)
-    flux.to(fader, 0.4, {a = 1}):delay(1):oncomplete(
+    flux.to(fader, 0.4, {a = 1}):delay(2):oncomplete(
       function()
         fader.complete = true
         timer.after(
@@ -316,6 +316,7 @@ function game:enter()
   m:play()
   m:setLooping(true)
   state = loadlvl("finallvl")
+
   local p = state.player
   p.sx = 0
   p.sy = 0
