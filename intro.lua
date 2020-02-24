@@ -159,7 +159,7 @@ local series = {
         text = "Good luck anyways, P-man!!",
         spd = 0.2,
         img = 5,
-        cb = hitsound,
+        cb = function () assets.sfx.good_luck:play() end,
     }
 
     
