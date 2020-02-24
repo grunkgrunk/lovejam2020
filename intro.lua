@@ -186,7 +186,6 @@ function intro:enter()
     texttimer = nextTimer()
 end
 function intro:leave()
-    print("see ya")
     love.audio.stop(assets.sfx.intromusictotal)
 end
 

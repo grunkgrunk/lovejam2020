@@ -34,8 +34,7 @@ function love.load()
 
   push:setupScreen(gameWidth, gameHeight, windowWidth, windowHeight, {fullscreen = false})
   screen:setDimensions(push:getDimensions())
-
-  Gamestate.switch(game)
+  Gamestate.switch(splash)
 end
 
 function love.draw()

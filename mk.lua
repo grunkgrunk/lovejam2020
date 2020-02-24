@@ -41,7 +41,6 @@ function mk.texttimer(txt, spd,every)
     function()
       every()
       o.currenttxt = o.currenttxt .. " " .. o.finaltxt[o.n]
-      print(o.currenttxt)
       if o.n == #o.finaltxt then
         o.done = true
       end

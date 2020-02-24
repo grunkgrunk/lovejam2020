@@ -29,7 +29,6 @@ function drw.player(player)
 end
 
 function drw.exclaim(txt, x,y,r, alpha, c1, c2)
-    print(c1)
     drw.text(txt,x,y,3000,nil,r, alpha, c1, c2)
 end
 

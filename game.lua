@@ -205,7 +205,6 @@ function game:update(dt)
   end
   if (textobj) then
     textobj.timer:update(dt)
-    print(textobj.currenttxt)
   end
 
   flux.update(dt)
