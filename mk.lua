@@ -75,6 +75,7 @@ function mk.exclaim(txt, x, y, r)
 end
 
 function mk.headexclaim(player, words)
+  if lume.any(player.exclaims, function(e) return (e.alpha == 1) end) then return end
   local x, y = player.leg:getPosition()
   player.exclaims[#player.exclaims + 1] = mk.exclaim(lume.randomchoice(words), x, y - 80 + lume.random(-10, 10), lume.random(-0.5, 0.5))
 end

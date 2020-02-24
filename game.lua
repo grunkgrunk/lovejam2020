@@ -125,11 +125,12 @@ end
 
 function game:draw()
   local cam, world, map = state.cam, state.world, state.map
+  love.graphics.draw(assets.art.orange, 0,0)
   cam:setScale(2)
   if not fader.complete then
     cam:draw(
       function(l, t, w, h)
-        love.graphics.clear(50 / 255, 60 / 255, 57 / 255)
+        --love.graphics.clear(50 / 255, 60 / 255, 57 / 255)
 
         if debug then
           world:draw()

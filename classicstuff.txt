@@ -1,3 +1,8 @@
 når man har committet men man glemte at pushe
 
 audacity crasher efter man har optaget noget meget vigtigt 
+
+man har lavet en ændring men man glemte at pushe dem
+
+man har lavet en ændring, man har husket at pushe, men den anden kan stadig ikke se ændringerne
+

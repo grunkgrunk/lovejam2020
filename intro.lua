@@ -6,8 +6,13 @@ local texttimer = nil
 
 local introdone = false
 
-
-local hitsound = function () assets.sfx.hitbrass:play() end
+local hitsound = function(pitch) 
+    return function()
+        assets.sfx.hitbrass:setVolume(2)
+        assets.sfx.hitbrass:setPitch(pitch) 
+        assets.sfx.hitbrass:play() 
+    end
+end
 
 local index = 1
 
@@ -36,7 +41,7 @@ local series = {
         text = "BAM!!!",
         spd = 0.2,
         fontSize = 300,
-        cb = hitsound,
+        cb = hitsound(0.5),
         
     },
     {
@@ -62,7 +67,7 @@ local series = {
         text = "kapow!!!",
         spd = 0.2,
         fontSize = 300,
-        cb = hitsound,
+        cb = hitsound(1),
     },
     {
         x = 0,
@@ -80,7 +85,7 @@ local series = {
         text = "SCIENCE!",
         spd = 0.2,
         fontSize = 280,
-        cb = hitsound,
+        cb = hitsound(1.5),
     },
     {
         x = 0,
@@ -156,7 +161,7 @@ local series = {
         y = gameHeight / 2,
         align = "center",
         limit = gameWidth,
-        text = "Good luck anyways, f-man!!",
+        text = "Good luck F-Man!!",
         spd = 0.2,
         img = 5,
         cb = function () assets.sfx.good_luck:play() end,
@@ -182,6 +187,7 @@ end
 function intro:enter()
     local m = assets.sfx.intromusictotal
     m:play()
+    m:setVolume(0.2)
     m:setLooping(true)
     texttimer = nextTimer()
 end
