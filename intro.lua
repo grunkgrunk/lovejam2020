@@ -186,6 +186,7 @@ function nextTimer()
         function()
             -- play sound
             screen:setShake(5) 
+            assets.sfx.talksnd:play()
         end)
     end
 end
