@@ -16,7 +16,7 @@ local game = require("game")
 local intro = require("intro")
 local splash = require("splash")
 
-debug = true
+debug = false
 state = {}
 raydebug = {}
 
@@ -33,7 +33,7 @@ function love.load()
 
   push:setupScreen(gameWidth, gameHeight, windowWidth, windowHeight, {fullscreen = true})
   screen:setDimensions(push:getDimensions())
-  Gamestate.switch(game)
+  Gamestate.switch(splash)
 end
 
 function love.draw()

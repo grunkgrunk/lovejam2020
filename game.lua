@@ -261,7 +261,8 @@ function game:update(dt)
   player.timer:update(dt)
 
   if player.leg:enter("Chicken") then
-    assets.sfx.bowl:setVolume(0.3)
+    love.audio.stop()
+    assets.sfx.bowl:setVolume(0.3)    
     assets.sfx.bowl:play()
     gameover = true
 
@@ -303,6 +304,8 @@ function game:keypressed(key)
     if not textobj then
       state.player.leg:setType("dynamic")
       bosstalk = false
+      assets.sfx.bossmusic:setVolume(0.3)
+      assets.sfx.bossmusic:play()
     end
   end
 
