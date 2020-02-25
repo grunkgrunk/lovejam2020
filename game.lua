@@ -311,10 +311,11 @@ function game:keypressed(key)
 
   if key == "space" and not bosstalk and not player.drawtongue then
     player.drawtongue = true
-    local l = 40
+    local maxlen = 40
+    local raylen = 150
     local dir = util.dir(player)
     local mouthpos = util.mouthpos(player)
-    local to = mouthpos + dir * l
+    local to = mouthpos + dir * raylen
     
     assets.sfx.tongue:setVolume(10)
     assets.sfx.tongue:play()
@@ -328,7 +329,13 @@ function game:keypressed(key)
         if not player.holdjoint then
           hitsomething = true
           player.tonguefollow = false
-          local j = world:addJoint("RopeJoint", leg, fixt:getBody(), mouthpos.x, mouthpos.y, x, y, l, true)
+          player.currlen = (vector(x, y) - mouthpos):len() 
+          local j = world:addJoint("RopeJoint", leg, fixt:getBody(), mouthpos.x, mouthpos.y, x, y, player.currlen, true)
+          flux.to(player, 0.2, {currlen = maxlen}):onupdate(function() 
+            if player.holdjoint then 
+              player.holdjoint:setMaxLength(player.currlen)
+            end
+          end)
           mk.headexclaim(player, {"Slurp!", "Omnomom!", "Slerp!", "Wham!", "Tongue!"})
           player.holdjoint = j
           player.tx = mouthpos.x
@@ -418,7 +425,7 @@ function game:keyreleased(key)
     player.holdjoint = nil
 
     local mouthpos = util.mouthpos(player)
-    flux.to(player, 0.1,  {tx = mouthpos.x, ty = mouthpos.y}):oncomplete(
+    flux.to(player, 0.05,  {tx = mouthpos.x, ty = mouthpos.y}):oncomplete(
       function()
         player.drawtongue = false
       end

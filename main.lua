@@ -16,7 +16,7 @@ local game = require("game")
 local intro = require("intro")
 local splash = require("splash")
 
-debug = false
+debug=false
 state = {}
 raydebug = {}
 
@@ -30,14 +30,12 @@ function love.load()
   
   local windowWidth, windowHeight = love.window.getDesktopDimensions()
   --windowWidth, windowHeight = windowWidth * .7, windowHeight * .7 --make the window a bit smaller than the screen itself
-
   push:setupScreen(gameWidth, gameHeight, windowWidth, windowHeight, {fullscreen = true})
   screen:setDimensions(push:getDimensions())
-  Gamestate.switch(splash)
+  Gamestate.switch(game)
 end
 
 function love.draw()
-  
   if Gamestate.current() == splash then
     Gamestate.draw()
   else
