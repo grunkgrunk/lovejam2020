@@ -33,7 +33,7 @@ function love.load()
 
   push:setupScreen(gameWidth, gameHeight, windowWidth, windowHeight, {fullscreen = true})
   screen:setDimensions(push:getDimensions())
-  Gamestate.switch(intro)
+  Gamestate.switch(game)
 end
 
 function love.draw()
@@ -73,6 +73,10 @@ function love.keypressed(key)
   if key == "r" then
     Gamestate.switch(Gamestate.current())
   end
+end
+
+function love.keyreleased(key)
+  Gamestate.keyreleased(key)
 end
 
 function love.resize(w, h)

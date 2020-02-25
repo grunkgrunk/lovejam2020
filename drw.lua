@@ -21,7 +21,7 @@ function drw.player(player)
     local x, y = leg:getPosition()
     local r = leg:getAngle()
     local s = assets.art.pengu.idle
-    if player.holding or player.smallauch then
+    if player.drawtongue or player.smallauch then
         s = assets.art.pengu.smallauch
     end
     if player.auch then

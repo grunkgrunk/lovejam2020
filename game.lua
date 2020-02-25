@@ -11,7 +11,7 @@ local mk = require("mk")
 local drw = require("drw")
 local colors = require("colors")
 local loadlvl = require("loadlvl")
-
+local util = require("util")
 local game = {}
 
 local fader = {r = 0, g = 0, b = 0, a = 0}
@@ -57,8 +57,7 @@ local bosstext = {
     text = "lets' see what frog tastes like!!!!",
     spd = 0.1,
     shake = 100
-  },
-
+  }
 }
 
 local tutor = {
@@ -99,49 +98,6 @@ local function playermove(world, player)
   if love.keyboard.isDown("right") then
     rotate(1)
   end
-
-  player.holding = false
-  if love.keyboard.isDown("space") and not bosstalk then
-    player.holding = true
-    local x, y = leg:getPosition()
-    local w = player.width / 2
-    local h = player.height / 2
-
-    local r = leg:getAngle()
-    local v = vector.fromPolar(r - math.pi / 2 + 0.30, h)
-
-    local hx, hy = x + v.x, y + v.y
-    local nv = v:normalized()
-    local l = 40
-    state.world:rayCast(
-      hx,
-      hy,
-      hx + nv.x * l,
-      hy + nv.y * l,
-      function(fixt, x, y, xn, yn, frac)
-        if not player.holdjoint then
-          player.tonguefollow = false
-          local j = world:addJoint("RopeJoint", leg, fixt:getBody(), hx, hy, x, y, l, true)
-          assets.sfx.tongue:setVolume(10)
-          assets.sfx.tongue:play()
-
-          mk.headexclaim(player, {"Slurp!", "Omnomom!", "Slerp!", "Wham!", "Tongue!"})
-          player.holdjoint = j
-          player.tx = hx
-          player.ty = hy
-          flux.to(player, 0.5, {tx = x, ty = y}):ease("elasticout"):oncomplete(
-            function()
-              player.tonguefollow = true
-            end
-          )
-        end
-        return 1
-      end
-    )
-  elseif player.holdjoint then
-    player.holdjoint:destroy()
-    player.holdjoint = nil
-  end
 end
 
 function game:draw()
@@ -166,19 +122,27 @@ function game:draw()
           end
         end
 
-        if state.player.holdjoint then
-          local x1, y1, x2, y2 = state.player.holdjoint:getAnchors()
-          love.graphics.setColor(colors.names.red)
-          love.graphics.setLineWidth(4)
-          if state.player.tonguefollow then
-            state.player.tx = x2
-            state.player.ty = y2
+        if state.player.drawtongue then
+          local player = state.player
+          local mouthpos = util.mouthpos(player)
+          
+          local x1, y1, x2, y2 = mouthpos.x, mouthpos.y, nil, nil
+          if player.holdjoint then
+            x1, y1, x2, y2 = player.holdjoint:getAnchors()
+          else
           end
+          if player.tonguefollow and x2 then
+            player.tx = x2
+            player.ty = y2
+          end
+
+          love.graphics.setLineWidth(4)
+          love.graphics.setColor(colors.names.red)
           love.graphics.circle("fill", x1, y1, 2)
-          love.graphics.circle("fill", state.player.tx, state.player.ty, 2)
+          love.graphics.circle("fill", player.tx, player.ty, 2)
 
           love.graphics.setLineStyle("smooth")
-          love.graphics.line(x1, y1, state.player.tx, state.player.ty)
+          love.graphics.line(x1, y1, player.tx, player.ty)
         end
 
         local x, y = state.talk.x, state.talk.y
@@ -202,7 +166,7 @@ function game:draw()
       state.tutorial,
       function(e)
         local txt = tutor[e.properties.hint]
-        local x, y = cam:toScreen(e.x, e.y)  
+        local x, y = cam:toScreen(e.x, e.y)
         drw.text(txt, x, y, 1000, nil, 0, 1, {0, 0, 0}, colors.names.red)
       end
     )
@@ -217,11 +181,21 @@ function game:draw()
     love.graphics.setColor(0, 0, 0, 1)
     local c1 = colors.names.white
     local c2 = colors.names.yellow
-    
-    if gameover then 
-      c1,c2 = colors.names.white, colors.names.red
+
+    if gameover then
+      c1, c2 = colors.names.white, colors.names.red
     end
-    drw.text(textobj.currenttxt, 0, gameHeight / 2 - 200, gameWidth, "center",0,1, colors.names.white, colors.names.yellow)
+    drw.text(
+      textobj.currenttxt,
+      0,
+      gameHeight / 2 - 200,
+      gameWidth,
+      "center",
+      0,
+      1,
+      colors.names.white,
+      colors.names.yellow
+    )
   end
 end
 
@@ -287,7 +261,7 @@ function game:update(dt)
   player.timer:update(dt)
 
   if player.leg:enter("Chicken") then
-    assets.sfx.bowl:setVolume(0.3)    
+    assets.sfx.bowl:setVolume(0.3)
     assets.sfx.bowl:play()
     gameover = true
 
@@ -308,7 +282,7 @@ function game:update(dt)
               "Good job, f-man! You saved the world!",
               0.5,
               function()
-                  assets.sfx.endgame:play()
+                assets.sfx.endgame:play()
               end
             )
           end
@@ -319,6 +293,7 @@ function game:update(dt)
 end
 
 function game:keypressed(key)
+  local player, world = state.player, state.world
   if fader.complete then
     return
   end
@@ -328,6 +303,51 @@ function game:keypressed(key)
     if not textobj then
       state.player.leg:setType("dynamic")
       bosstalk = false
+    end
+  end
+
+  if key == "space" and not bosstalk and not player.drawtongue then
+    player.drawtongue = true
+    local l = 40
+    local dir = util.dir(player)
+    local mouthpos = util.mouthpos(player)
+    local to = mouthpos + dir * l
+    
+    assets.sfx.tongue:setVolume(10)
+    assets.sfx.tongue:play()
+    local hitsomething = false
+    state.world:rayCast(
+      mouthpos.x,
+      mouthpos.y,
+      to.x,
+      to.y,
+      function(fixt, x, y, xn, yn, frac)
+        if not player.holdjoint then
+          hitsomething = true
+          player.tonguefollow = false
+          local j = world:addJoint("RopeJoint", leg, fixt:getBody(), mouthpos.x, mouthpos.y, x, y, l, true)
+          mk.headexclaim(player, {"Slurp!", "Omnomom!", "Slerp!", "Wham!", "Tongue!"})
+          player.holdjoint = j
+          player.tx = mouthpos.x
+          player.ty = mouthpos.y
+          flux.to(player, 0.5, {tx = x, ty = y}):ease("elasticout"):oncomplete(
+            function()
+              player.tonguefollow = true
+            end
+          )
+        end
+        return 1
+      end
+    )
+
+    if not hitsomething then
+      player.tx = mouthpos.x 
+      player.ty = mouthpos.y
+      flux.to(player, 0.1, {tx = to.x, ty = to.y}):after(0.05,  {tx = mouthpos.x, ty = mouthpos.y}):oncomplete(
+        function()
+          player.drawtongue = false
+        end
+      )
     end
   end
 
@@ -365,8 +385,7 @@ function game:keypressed(key)
         end
       )
     end
-    if found or debug then
-      player.leg:setLinearVelocity(0, 0)
+    if not player.jumping then
       flux.to(player, 0.15, {sx = 0.9, sy = 1.3}):oncomplete(
         function()
           player.jumping = false
@@ -377,10 +396,30 @@ function game:keypressed(key)
       mk.headexclaim(player, {"Jump!", "C ya!", "Woosh!", "Pow!", "Fly!", "Huergh!"})
       player.jumping = true
       player.canauch = false
-      local d = vector.fromPolar(player.leg:getAngle() - math.pi / 2)
-      local v = d * 2000
-      player.leg:applyLinearImpulse(v.x, v.y)
+
+      if found or debug then
+        player.leg:setLinearVelocity(0, 0)
+        local d = vector.fromPolar(player.leg:getAngle() - math.pi / 2)
+        local v = d * 2000
+        player.leg:applyLinearImpulse(v.x, v.y)
+      end
     end
+  end
+end
+
+function game:keyreleased(key)
+  local player = state.player
+  player.tonguefollow = false
+  if key == "space" and player.holdjoint then
+    player.holdjoint:destroy()
+    player.holdjoint = nil
+
+    local mouthpos = util.mouthpos(player)
+    flux.to(player, 0.1,  {tx = mouthpos.x, ty = mouthpos.y}):oncomplete(
+      function()
+        player.drawtongue = false
+      end
+    )
   end
 end
 
@@ -391,11 +430,14 @@ function game:enter()
   assets.sfx.teleportintro:play()
   local m = assets.sfx.background4game
   m:setVolume(0.1)
-  timer.after(3,function () 
-    m:play() 
-    m:setLooping(true)
-   end )
-  
+  timer.after(
+    3,
+    function()
+      m:play()
+      m:setLooping(true)
+    end
+  )
+
   state = loadlvl("finallvl")
 
   local p = state.player

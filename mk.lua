@@ -97,7 +97,7 @@ function mk.player(world, x, y)
     height = h,
     leg = leg,
     grounded = false,
-    holding = false,
+    drawtongue = false,
     auch = false,
     smallauch = false,
     canauch = true,
