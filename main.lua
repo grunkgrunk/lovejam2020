@@ -32,7 +32,7 @@ function love.load()
   --windowWidth, windowHeight = windowWidth * .7, windowHeight * .7 --make the window a bit smaller than the screen itself
   push:setupScreen(gameWidth, gameHeight, windowWidth, windowHeight, {fullscreen = true})
   screen:setDimensions(push:getDimensions())
-  Gamestate.switch(game)
+  Gamestate.switch(splash)
 end
 
 function love.draw()
@@ -64,7 +64,7 @@ function love.keypressed(key)
     love.event.quit()
   end
 
-  if key == "d" then
+  if key == "d" and false then
     debug = not debug
   end
 
